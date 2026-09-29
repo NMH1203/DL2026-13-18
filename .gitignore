@@ -48,7 +48,6 @@ Notebooks/NMH/github_pull.ipynb
 *.tflite
 
 # Generated experiment outputs
-Results/
 runs/
 yolo_runs/
 wandb/
