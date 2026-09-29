@@ -24,7 +24,7 @@
 8. [Kế Hoạch Triển Khai Thực Nghiệm Chi Tiết (Sprint 18 Ngày)](#8-kế-hoạch-triển-khai-thực-nghiệm-chi-tiết-sprint-18-ngày)
 9. [Các Tiêu Chí Đánh Giá (Evaluation Metrics)](#9-các-tiêu-chí-đánh-giá-evaluation-metrics)
 10. [Bảng Kết Quả Thực Nghiệm Dự Kiến & Phân Tích Khoa Học](#10-bảng-kết-quả-thực-nghiệm-dự-kiến--phân-tích-khoa-học)
-11. [Cấu Trúc Thư Mục Dự Án & Kịch Bản run.py Tự Động](#11-cấu-trúc-thư-mục-dự-án--kịch-bản-runpy-tự-động)
+11. [Cấu Trúc Thư Mục, Kịch Bản run.py & Hướng Dẫn Cài Đặt](#11-cấu-trúc-thư-mục-kịch-bản-runpy--hướng-dẫn-cài-đặt)
 12. [Mục Tiêu Đầu Ra Đạt Được (Learning Outcomes)](#12-mục-tiêu-đầu-ra-đạt-được-learning-outcomes)
 
 ---
@@ -397,16 +397,19 @@ Sử dụng tiêu chuẩn đánh giá PASCAL VOC và MS COCO:
 
 ---
 
-## 11. Cấu Trúc Thư Mục Dự Án & Kịch Bản run.py Tự Động
+## 11. Cấu Trúc Thư Mục, Kịch Bản run.py & Hướng Dẫn Cài Đặt
 
 ### 11.1. Sơ Đồ Cây Thư Mục Toàn Diện
 ```text
 Project18/
 │
 ├── README.md                      # Báo cáo tổng thể toàn bộ đề tài
-├── Project 18.md                  # Ghi chú & phân tích chi tiết đề tài
-├── run.py                         # 🚀 SCRIPT MASTER CHẠY TOÀN BỘ PIPELINE TỰ ĐỘNG
+├── run.py                         # Entry point ổn định; gọi pipeline của thành viên
 ├── requirements.txt               # Thư viện phụ thuộc (torch, ultralytics, opencv, torchvision)
+├── doc/                           # Tài liệu bổ sung của dự án
+│   ├── implementation_plan.md     # Kế hoạch triển khai
+│   ├── KAGGLE_GUIDE.md            # Hướng dẫn chạy trên Kaggle
+│   └── RESULTS.md                 # Báo cáo kết quả
 │
 ├── Dataset/                       # Quản lý dữ liệu
 │   ├── raw/ExDark/                # Dữ liệu gốc tải từ Kaggle
@@ -424,13 +427,17 @@ Project18/
 │   ├── 02_zerodce_enhancement.ipynb# Huấn luyện/Inference Zero-DCE & Đo NIQE
 │   └── 03_yolov8_experiments.ipynb # Chạy 4 kịch bản YOLOv8 & Đánh giá
 │
-├── src/                           # Modules mã nguồn Python chuẩn mực
+├── src/                           # Mỗi thành viên làm trong package riêng
 │   ├── __init__.py
-│   ├── model_zerodce.py           # Định nghĩa kiến trúc DCE-Net / Zero-DCE++
-│   ├── loss_zerodce.py            # 4 hàm loss: Spatial, Exposure, Color, Smoothness
-│   ├── preprocess_dip.py          # Module CLAHE + Bilateral (Baseline truyền thống)
-│   ├── metrics.py                 # Hàm tính chỉ số NIQE, BRISQUE, FPS
-│   └── visualize.py               # Xuất ảnh đối chứng 4 khung hình song song
+│   ├── README.md                  # Quy ước cộng tác, đặt tên package
+│   └── luong/                     # Phần triển khai do Lương phụ trách
+│       ├── __init__.py
+│       ├── pipeline.py            # Điều phối 6 phase; được run.py gọi
+│       ├── model_zerodce.py       # Định nghĩa kiến trúc DCE-Net / Zero-DCE++
+│       ├── loss_zerodce.py        # 4 hàm loss: Spatial, Exposure, Color, Smoothness
+│       ├── preprocess_dip.py      # Module CLAHE + Bilateral
+│       ├── metrics.py             # Hàm tính NIQE, BRISQUE, FPS
+│       └── visualize.py           # Xuất ảnh và biểu đồ so sánh
 │
 └── Results/                       # Thư mục lưu trữ sản phẩm
     ├── weights/                   # Trọng số mô hình
@@ -445,8 +452,9 @@ Project18/
 
 ---
 
-### 11.2. Kịch Bản 6 Phase Bên Trong `run.py`
-Toàn bộ quy trình thực nghiệm được tích hợp tự động hóa qua lệnh `python run.py`:
+### 11.2. Kịch Bản 6 Phase
+Lệnh `python run.py` là giao diện ổn định. File này chỉ gọi phần triển khai tại
+`src/luong/pipeline.py`, nơi tích hợp toàn bộ quy trình thực nghiệm:
 
 ```
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
@@ -473,6 +481,102 @@ Toàn bộ quy trình thực nghiệm được tích hợp tự động hóa qua
   * Kịch bản 3: Huấn luyện `yolov8n` trên ảnh Zero-DCE thích nghi $\rightarrow$ $mAP_{retrained}$.
 * **Phase 4: Báo cáo & Trực quan:** Xuất bảng `comparisons_table.csv`, vẽ biểu đồ so sánh cột $mAP$ và xuất ảnh đối chứng side-by-side vào `Results/figures/`.
 * **Phase 5: Demo thời gian thực:** Cung cấp hàm `predict_pipeline(image_path)` thực thi trọn vẹn: `Ảnh tối ➔ Zero-DCE ➔ YOLOv8 ➔ Kết quả` chỉ trong ~0.02 giây.
+
+---
+
+### 11.3. Hướng Dẫn Cài Đặt & Chạy Chi Tiết (Installation & Running Guide)
+
+#### Bước 1: Khởi tạo môi trường ảo (Virtual Environment)
+Dự án tương thích tốt nhất với **Python 3.9 - 3.12**. Khuyến khích sử dụng môi trường ảo độc lập (`venv` hoặc `conda`):
+
+* **Trên Windows (PowerShell):**
+  ```powershell
+  # Tạo môi trường ảo
+  python -m venv venv
+
+  # Kích hoạt môi trường ảo
+  .\venv\Scripts\Activate.ps1
+  ```
+
+* **Trên Linux / macOS / Google Colab:**
+  ```bash
+  # Tạo và kích hoạt môi trường ảo
+  python3 -m venv venv
+  source venv/bin/activate
+  ```
+
+#### Bước 2: Cài đặt các thư viện phụ thuộc
+```bash
+# Nâng cấp pip
+pip install --upgrade pip
+
+# Cài đặt toàn bộ dependencies từ requirements.txt
+pip install -r requirements.txt
+```
+
+> [!TIP]
+> Nếu bạn có card đồ họa rời NVIDIA và muốn tăng tốc GPU tối đa với PyTorch CUDA, hãy cài đặt bản PyTorch tương thích CUDA trước (ví dụ CUDA 12.1):
+> ```bash
+> pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+> ```
+
+#### Bước 3: Xác thực cấu trúc Dữ liệu (Dataset)
+Bộ dữ liệu ExDark đã được chia sẵn và đặt tại thư mục:
+```text
+Dataset/
+└── exdark_yolo_dark/
+    ├── data.yaml            # Cấu hình 12 classes & đường dẫn
+    ├── train/               # 5,142 ảnh và nhãn
+    ├── valid/               # 1,469 ảnh và nhãn
+    └── test/                # 734 ảnh và nhãn
+```
+
+#### Bước 4: Chạy Pipeline Thực Nghiệm qua kịch bản `run.py`
+Kịch bản `run.py` cho phép chạy linh hoạt từng giai đoạn hoặc chạy toàn bộ:
+
+1. **Khởi tạo thư mục và kiểm tra dữ liệu (Phase 0 & 1):**
+   ```bash
+   python run.py --phase 0,1
+   ```
+   *Kiểm tra khả năng nhận diện GPU, tạo thư mục `Results/weights`, `Results/figures` và xác nhận đủ 7,345 cặp ảnh/nhãn ExDark.*
+
+2. **Huấn luyện Zero-DCE & Tăng cường sáng toàn bộ dataset (Phase 2):**
+   ```bash
+   python run.py --phase 2 --epochs_dce 10
+   ```
+   *Huấn luyện mạng tự giám sát DCE-Net với 4 hàm loss, đo chỉ số NIQE/BRISQUE, và tự động sinh tập dữ liệu ảnh sáng vào `Dataset/exdark_yolo_zerodce/`.*
+
+3. **Chạy 4 kịch bản nhận diện đối tượng YOLOv8 (Phase 3):**
+   ```bash
+   python run.py --phase 3 --epochs_yolo 15 --batch_size 16
+   ```
+   *Đánh giá và so sánh: (1) Raw Dark Baseline, (2) CLAHE Cascaded, (3) Zero-DCE Cascaded, (4) Zero-DCE Retrained & Aligned.*
+
+4. **Tổng hợp số liệu & xuất biểu đồ báo cáo (Phase 4):**
+   ```bash
+   python run.py --phase 4
+   ```
+   *Xuất bảng tổng hợp `Results/comparisons_table.csv` và vẽ biểu đồ cột `Results/figures/map_comparison.png`.*
+
+5. **Chạy thử Demo suy luận thời gian thực trên 1 ảnh tối (Phase 5):**
+   ```bash
+   python run.py --phase 5
+   ```
+   *Tự động lấy ảnh tối mẫu từ tập test, đưa qua mạng Zero-DCE làm sáng, truyền tiếp vào YOLOv8 nhận diện bounding boxes và lưu ảnh kết quả vào `Results/demo_output.png` kèm thông số độ trễ Latency/FPS.*
+
+6. **Chạy toàn bộ pipeline tự động (End-to-End từ A đến Z):**
+   ```bash
+   python run.py --phase all --epochs_dce 10 --epochs_yolo 15
+   ```
+
+#### Bước 5: Chạy tương tác qua Jupyter Notebooks
+Nếu bạn muốn nghiên cứu chuyên sâu từng phần dưới dạng tương tác trực quan:
+* [Notebooks/01_data_preparation.ipynb](Notebooks/01_data_preparation.ipynb): Thống kê mô tả dữ liệu ExDark (EDA), trực quan hóa bounding boxes ban đêm.
+* [Notebooks/02_zerodce_enhancement.ipynb](Notebooks/02_zerodce_enhancement.ipynb): Huấn luyện và quan sát trực tiếp hiệu ứng tăng sáng của Zero-DCE so với CLAHE.
+* [Notebooks/03_yolov8_experiments.ipynb](Notebooks/03_yolov8_experiments.ipynb): Chạy đối chứng định lượng 4 kịch bản YOLOv8.
+
+> [!NOTE]
+> Để tận dụng **GPU T4/P100 miễn phí** từ Kaggle cho tốc độ huấn luyện nhanh gấp 20 lần so với CPU, vui lòng xem hướng dẫn chi tiết tại [KAGGLE_GUIDE.md](doc/KAGGLE_GUIDE.md).
 
 ---
 

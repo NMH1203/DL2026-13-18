@@ -2,7 +2,7 @@
 ## Đề tài: Low-Light Image Enhancement and Downstream Recognition
 
 > **Trạng thái:** Toàn bộ kiến trúc mã nguồn, thuật toán toán học, pipeline tự động hóa và bộ notebooks đã được hiện thực hóa và kiểm thử thành công 100%.  
-> **Tài liệu tham chiếu:** [README.md](README.md) (Mục 6: Sơ đồ Pipeline Tổng Thể & Mục 11: Cấu trúc Thư mục và Kịch bản `run.py`).
+> **Tài liệu tham chiếu:** [README.md](../README.md) (Mục 6: Sơ đồ Pipeline Tổng Thể & Mục 11: Cấu trúc Thư mục và Kịch bản `run.py`).
 
 ---
 
@@ -185,9 +185,9 @@ Script điều phối trung tâm hỗ trợ chạy dòng lệnh linh hoạt theo
 
 ### 3.8. Bộ 3 Notebooks Thử Nghiệm Tương Tác (`Notebooks/`)
 Dành cho việc chạy tương tác từng ô cell trên JupyterLab hoặc Google Colab:
-1. [Notebooks/01_data_preparation.ipynb](Notebooks/01_data_preparation.ipynb): Khảo sát dữ liệu, vẽ biểu đồ phân bố 12 classes và overlay bounding box trong đêm.
-2. [Notebooks/02_zerodce_enhancement.ipynb](Notebooks/02_zerodce_enhancement.ipynb): Huấn luyện tương tác Zero-DCE, so sánh ảnh sáng vs CLAHE và đo điểm NIQE/BRISQUE.
-3. [Notebooks/03_yolov8_experiments.ipynb](Notebooks/03_yolov8_experiments.ipynb): Chạy thử nghiệm và phân tích định lượng 4 kịch bản YOLOv8.
+1. [Notebooks/01_data_preparation.ipynb](../Notebooks/01_data_preparation.ipynb): Khảo sát dữ liệu, vẽ biểu đồ phân bố 12 classes và overlay bounding box trong đêm.
+2. [Notebooks/02_zerodce_enhancement.ipynb](../Notebooks/02_zerodce_enhancement.ipynb): Huấn luyện tương tác Zero-DCE, so sánh ảnh sáng vs CLAHE và đo điểm NIQE/BRISQUE.
+3. [Notebooks/03_yolov8_experiments.ipynb](../Notebooks/03_yolov8_experiments.ipynb): Chạy thử nghiệm và phân tích định lượng 4 kịch bản YOLOv8.
 
 ---
 
