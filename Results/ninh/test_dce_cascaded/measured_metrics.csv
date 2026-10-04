@@ -1,0 +1,2 @@
+weights,data,split,precision,recall,map50,map50_95
+C:\18.deeplearning\Low-Light-Image-Enhancement-and-Downstream-Recognition\Results\ninh\dark_e10\weights\best.pt,C:\18.deeplearning\Low-Light-Image-Enhancement-and-Downstream-Recognition\Dataset\ninh_zerodce\data.yaml,test,0.40620859655566804,0.23145095686060055,0.20916594883125708,0.08825500720834377
