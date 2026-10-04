@@ -1,0 +1,17 @@
+{
+  "command": "dce",
+  "data": "Dataset/ninh_dark/data.yaml",
+  "device": "0",
+  "project": "Results/ninh",
+  "name": "dce_e20",
+  "batch": 8,
+  "imgsz": 256,
+  "epochs": 10,
+  "seed": 42,
+  "lr": 0.0001,
+  "device_used": "cuda:0",
+  "model_implementation": "src.luong.model_zerodce.DCENet",
+  "torch_version": "2.5.1+cu121",
+  "train_images": 5142,
+  "val_images": 1469
+}
