@@ -1,0 +1,9 @@
+{
+  "weights": "C:\\18.deeplearning\\Low-Light-Image-Enhancement-and-Downstream-Recognition\\Results\\ninh\\zerodce_e10\\weights\\best.pt",
+  "data": "C:\\18.deeplearning\\Low-Light-Image-Enhancement-and-Downstream-Recognition\\Dataset\\ninh_zerodce\\data.yaml",
+  "split": "test",
+  "precision": 0.6293906179532028,
+  "recall": 0.47423979156807383,
+  "map50": 0.5229262856586453,
+  "map50_95": 0.23632616743698762
+}

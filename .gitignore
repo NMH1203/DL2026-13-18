@@ -1,74 +1,7 @@
-# Python bytecode and caches
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-.env
-
-# Build and package outputs
-build/
-dist/
-*.egg-info/
-.eggs/
-wheels/
-
-# Virtual environments and local secrets
 .venv/
 venv/
-env/
-ENV/
-.env
-.env.*
-!.env.example
-
-# Jupyter temporary files
-.ipynb_checkpoints/
-
-# Personal helper notebooks (local only)
-Notebooks/NMH/github_pull.ipynb
-
-# Dataset archives
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-*.rar
-*.7z
-
-# Model checkpoints and exported inference models
+Dataset/
+Results/**/weights/
 *.pt
-*.pth
 *.ckpt
-*.onnx
-*.engine
-*.tflite
-
-# Generated experiment outputs
-Results/
-runs/
-yolo_runs/
-wandb/
-mlruns/
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
-*.bak
-*.swp
-*.swo
-*~
-nul
-
-# IDE and operating-system metadata
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
+*.pth
