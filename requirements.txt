@@ -1,14 +1,14 @@
 # Project 18: Low-Light Image Enhancement and Downstream Recognition
-# Dependencies specification
+# Unified dependencies for the pipelines, notebooks, and dataset preparation.
 
-torch>=2.0.0
-torchvision>=0.15.0
-ultralytics>=8.0.0
-opencv-python>=4.7.0
-numpy>=1.23.0
-scipy>=1.10.0
-matplotlib>=3.7.0
-Pillow>=9.5.0
-pandas>=2.0.0
+torch>=2.6
+torchvision>=0.21
+ultralytics>=8.0
+opencv-python>=4.8
+numpy>=1.26
+scipy>=1.10
+matplotlib>=3.8
+Pillow>=10
+pandas>=2.0
 PyYAML>=6.0
-tqdm>=4.65.0
+tqdm>=4.65

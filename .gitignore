@@ -31,6 +31,11 @@ ENV/
 # Personal helper notebooks (local only)
 Notebooks/NMH/github_pull.ipynb
 
+# Contributor-local generated data and results
+/src/hienanh/Dataset/
+/src/hienanh/ExDark.v12i.yolov8-obb/
+/src/hienanh/Results/
+
 # Dataset archives
 *.zip
 *.tar
