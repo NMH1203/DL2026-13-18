@@ -44,13 +44,7 @@ Notebooks/NMH/github_pull.ipynb
 *.rar
 *.7z
 
-# Model checkpoints and exported inference models
-*.pt
-*.pth
-*.ckpt
-*.onnx
-*.engine
-*.tflite
+
 
 # Generated experiment outputs
 runs/
