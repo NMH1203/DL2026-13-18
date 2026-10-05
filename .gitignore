@@ -31,13 +31,13 @@ ENV/
 # Personal helper notebooks (local only)
 Notebooks/NMH/github_pull.ipynb
 
-# Dataset archives
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-*.rar
-*.7z
+# Dataset and raw experiment folders (kept local, too large for git)
+Dataset/
+exdark_yolo_dark/
+Results/
+Results_try/
+Results_final /
+Results_final/
 
 # Model checkpoints and exported inference models
 *.pt
@@ -47,8 +47,14 @@ Notebooks/NMH/github_pull.ipynb
 *.engine
 *.tflite
 
+# Allow bundled lightweight weights and sample images for Demo
+!Demo/weights/
+!Demo/weights/*.pt
+!Demo/weights/*.pth
+!Demo/static/sample_images/
+!Demo/static/sample_images/*
+
 # Generated experiment outputs
-Results/
 runs/
 yolo_runs/
 wandb/

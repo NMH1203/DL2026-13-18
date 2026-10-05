@@ -1,0 +1,21 @@
+# Project 18: Low-Light Image Enhancement and Downstream Recognition
+# Core Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Object Detection Framework
+ultralytics>=8.0.0
+
+# Computer Vision and Scientific Computing
+opencv-python>=4.8.0
+scipy>=1.10.0
+numpy>=1.23.0
+pandas>=2.0.0
+Pillow>=9.5.0
+pyyaml>=6.0
+
+# Interactive Web Demo
+flask>=2.3.0
+
+# Progress Tracking & CLI Utilities
+tqdm>=4.65.0
