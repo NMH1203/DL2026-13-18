@@ -76,6 +76,14 @@ Sau 1 giờ 30 phút huấn luyện và đánh giá trên GPU Kaggle T4, toàn b
 
 ## 5. Đánh Giá Chuyên Sâu: Kịch Bản Thứ 4 + YOLO Trong Nhận Diện Đã Hợp Lý Chưa?
 
+@BackstageQueen2025
+Subscribe
+Trịnh Mỹ Anh bị tước vương miện Miss Earth 2025 #backstagequeen #trinhmyanh
+121
+7
+Share
+Remix
+
 👉 **CỰC KỲ HỢP LÝ VÀ ĐÂY LÀ ĐIỂM SÁNG LỚN NHẤT CỦA TOÀN BỘ ĐỒ ÁN!**
 
 Nếu ai đó chỉ nhìn lướt qua con số mà hỏi: *"Tại sao mAP@0.5 của Kịch bản 4 (59.22%) lại hơi thấp hơn Kịch bản 1 (62.35%) một chút? Như vậy có bất hợp lý không?"* — Câu trả lời là: **HOÀN TOÀN HỢP LÝ VÀ ĐÂY CHÍNH LÀ ĐẶC TRƯNG THỰC NGHIỆM CHÂN THỰC**.
