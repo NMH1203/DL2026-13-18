@@ -1,8 +1,0 @@
-Dataset/
-src/hienanh/Dataset/
-src/hienanh/ExDark.v12i.yolov8-obb/
-src/hienanh/Results/
-*.pt
-*.pth
-*.onnx
-*.zip

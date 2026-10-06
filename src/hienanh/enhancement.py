@@ -1,4 +1,4 @@
-"""Official-checkpoint-compatible Zero-DCE models and the project's DIP baseline.
+"""Official-checkpoint-compatible Zero-DCE models and a CLAHE-only baseline.
 
 Architecture reference: https://github.com/Li-Chongyi/Zero-DCE
 Zero-DCE++ reference: https://github.com/Li-Chongyi/Zero-DCE_extension
@@ -23,6 +23,7 @@ class SeparableConv(nn.Module):
         self.point_conv = nn.Conv2d(input_channels, output_channels, 1)
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
+        """Apply depthwise spatial filtering followed by channel mixing."""
         return self.point_conv(self.depth_conv(image))
 
 
@@ -52,6 +53,7 @@ class ZeroDCE(nn.Module):
             setattr(self, f"e_conv{index}", layer)
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
+        """Estimate enhancement curves and apply eight pixelwise updates."""
         features = image
         if self.scale_factor != 1:
             features = F.interpolate(
@@ -78,15 +80,20 @@ class ZeroDCE(nn.Module):
         return enhanced
 
 
-def enhance_clahe_bilateral(image_bgr: np.ndarray) -> np.ndarray:
-    """Apply the exact default parameters from the linked project's DIP module."""
+def enhance_clahe(image_bgr: np.ndarray) -> np.ndarray:
+    """Enhance LAB luminance with CLAHE, without smoothing or denoising.
+
+    CLAHE adjusts local contrast; it does not guarantee brighter pixels at
+    every location. Color channels and image dimensions are preserved.
+    """
+    # Separate lightness from chromatic channels before local equalization.
     lab = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2LAB)
     luminance, channel_a, channel_b = cv2.split(lab)
     luminance = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(luminance)
-    enhanced = cv2.cvtColor(
+    # Recombine the original chromatic channels without a noise filter.
+    return cv2.cvtColor(
         cv2.merge((luminance, channel_a, channel_b)), cv2.COLOR_LAB2BGR
     )
-    return cv2.bilateralFilter(enhanced, d=7, sigmaColor=50.0, sigmaSpace=50.0)
 
 
 def load_model(checkpoint, variant="zerodce", scale_factor=1, device="cpu"):
@@ -100,8 +107,10 @@ def load_model(checkpoint, variant="zerodce", scale_factor=1, device="cpu"):
 def enhance_neural(image_bgr, model, device="cpu"):
     """Enhance at the source image dimensions and return an 8-bit BGR image."""
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    # Convert HWC uint8 pixels to normalized NCHW model input.
     tensor = torch.from_numpy(image_rgb).permute(2, 0, 1).unsqueeze(0)
     tensor = tensor.to(device=device, dtype=torch.float32) / 255.0
+    # Disable gradient tracking for pretrained inference.
     with torch.inference_mode():
         result = model(tensor)
     if not torch.isfinite(result).all():
