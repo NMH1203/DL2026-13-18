@@ -66,9 +66,13 @@ Results_final/
 
 # Generated experiment outputs
 runs/
-yolo_runs/
 wandb/
 mlruns/
+
+# Allow Results/yolo_runs
+!Results/yolo_runs/
+!Results/yolo_runs/**
+!Results/yolo_runs/*/*/*.pt
 
 # Logs and temporary files
 *.log
