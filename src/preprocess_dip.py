@@ -85,7 +85,62 @@ def batch_enhance_clahe(
         if img is None:
             continue
         enhanced = enhance_clahe_bilateral(img, **kwargs)
-        cv2.imwrite(str(dst_path / img_file.name), enhanced)
-        count += 1
-
     return count
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Trích xuất và xem thử ảnh làm sáng bằng CLAHE + Bilateral")
+    parser.add_argument("--input", "-i", type=str, default=None, help="Đường dẫn file ảnh tối đầu vào")
+    parser.add_argument("--output", "-o", type=str, default="Results/clahe_output.jpg", help="Đường dẫn lưu ảnh kết quả CLAHE")
+    parser.add_argument("--clip_limit", type=float, default=2.0, help="Ngưỡng tương phản CLAHE (mặc định: 2.0)")
+    parser.add_argument("--bilateral_d", type=int, default=7, help="Đường kính lân cận lọc Bilateral (mặc định: 7)")
+    args = parser.parse_args()
+
+    project_root = Path(__file__).resolve().parent.parent
+
+    # Nếu không truyền ảnh, tự động lấy 1 ảnh mẫu trong Doc/samples hoặc Dataset
+    if args.input is None:
+        sample_candidates = [
+            project_root / "Doc" / "samples" / "sample_1.jpg",
+            project_root / "Doc" / "samples" / "sample_2.jpg",
+        ]
+        test_images = list((project_root / "Dataset" / "exdark_yolo_dark" / "test" / "images").glob("*.jpg"))
+        if test_images:
+            sample_candidates.append(test_images[0])
+
+        input_path = None
+        for cand in sample_candidates:
+            if cand.exists():
+                input_path = cand
+                break
+        if input_path is None:
+            print("❌ Không tìm thấy ảnh mẫu! Hãy truyền đường dẫn: python src/preprocess_dip.py --input <đường_dẫn_ảnh>")
+            exit(1)
+    else:
+        input_path = Path(args.input)
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print("=" * 65)
+    print(f"🔄 Đang xử lý CLAHE + Bilateral cho ảnh:")
+    print(f"   📥 Đầu vào:  {input_path}")
+    print(f"   ⚙️ Tham số:  clip_limit={args.clip_limit}, bilateral_d={args.bilateral_d}")
+
+    img_bgr = cv2.imread(str(input_path))
+    if img_bgr is None:
+        print(f"❌ Không thể đọc file ảnh: {input_path}")
+        exit(1)
+
+    enhanced = enhance_clahe_bilateral(
+        img_bgr,
+        clip_limit=args.clip_limit,
+        bilateral_d=args.bilateral_d
+    )
+
+    cv2.imwrite(str(output_path), enhanced)
+    print(f"✅ ĐÃ XUẤT ẢNH CLAHE THÀNH CÔNG!")
+    print(f"   📤 Ảnh lưu tại: {output_path.resolve()}")
+    print("=" * 65)
