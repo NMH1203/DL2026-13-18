@@ -1,0 +1,2 @@
+experiment,enhancer,bilateral_d,sigma_color,sigma_space,epochs_max,imgsz,batch,patience,seed,precision,recall,map50,map50_95
+Zero-DCE++ + Bilateral + YOLOv8n,official pretrained Zero-DCE++,5,25,25,40,640,16,15,42,0.7040146820072515,0.5677365713175111,0.6243888464492481,0.2920873423148605
