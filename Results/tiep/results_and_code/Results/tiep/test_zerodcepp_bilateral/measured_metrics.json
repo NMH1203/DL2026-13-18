@@ -1,9 +1,0 @@
-{
-  "weights": "/kaggle/working/Project18/Results/tiep/yolo_zerodcepp_bilateral_e40/weights/best.pt",
-  "data": "/kaggle/working/Project18/Dataset/exdark_yolo_zerodcepp_bilateral_d5_s25/data.yaml",
-  "split": "test",
-  "precision": 0.7040146820072515,
-  "recall": 0.5677365713175111,
-  "map50": 0.6243888464492481,
-  "map50_95": 0.2920873423148605
-}

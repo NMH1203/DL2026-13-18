@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #17212b; }
+      .group-title { font: 700 22px Arial, sans-serif; fill: #17212b; }
+      .node-title { font: 700 20px Arial, sans-serif; fill: #17212b; }
+      .body { font: 400 17px Arial, sans-serif; fill: #263442; }
+      .small { font: 400 15px Arial, sans-serif; fill: #263442; }
+      .arrow { fill: none; stroke: #263442; stroke-width: 2.5; marker-end: url(#arrowhead); }
+      .group { stroke-width: 2; rx: 18; }
+      .node { stroke-width: 2; rx: 12; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#263442"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="1040" fill="#ffffff"/>
+
+  <!-- Dataset -->
+  <rect class="node" x="390" y="35" width="820" height="100" fill="#e8f4fb" stroke="#4d7d95"/>
+  <text class="title" x="800" y="76" text-anchor="middle">EXDARK PROCESSED DATASET</text>
+  <text class="body" x="800" y="108" text-anchor="middle">7,345 real low-light images · 12 object classes · train/validation/test split</text>
+
+  <!-- Group containers -->
+  <rect class="group" x="35" y="205" width="310" height="285" fill="#f2f3f4" stroke="#9aa4ad"/>
+  <text class="group-title" x="190" y="240" text-anchor="middle">Raw baseline</text>
+
+  <rect class="group" x="375" y="205" width="500" height="285" fill="#eaf9f7" stroke="#5aa79f"/>
+  <text class="group-title" x="625" y="240" text-anchor="middle">Classical enhancement</text>
+
+  <rect class="group" x="905" y="205" width="660" height="285" fill="#f2edff" stroke="#8265b7"/>
+  <text class="group-title" x="1235" y="240" text-anchor="middle">Learned enhancement</text>
+
+  <!-- Case nodes -->
+  <rect class="node" x="70" y="300" width="240" height="105" fill="#ffffff" stroke="#7d8993"/>
+  <text class="node-title" x="190" y="340" text-anchor="middle">Raw dark images</text>
+  <text class="small" x="190" y="372" text-anchor="middle">Reference input domain</text>
+
+  <rect class="node" x="410" y="275" width="200" height="105" fill="#ffffff" stroke="#4f9a92"/>
+  <text class="node-title" x="510" y="317" text-anchor="middle">CLAHE</text>
+  <text class="small" x="510" y="349" text-anchor="middle">Local contrast</text>
+
+  <rect class="node" x="640" y="275" width="200" height="105" fill="#ffffff" stroke="#4f9a92"/>
+  <text class="node-title" x="740" y="307" text-anchor="middle">CLAHE +</text>
+  <text class="node-title" x="740" y="333" text-anchor="middle">bilateral</text>
+  <text class="small" x="740" y="360" text-anchor="middle">Contrast + denoising</text>
+
+  <rect class="node" x="935" y="275" width="190" height="125" fill="#ffffff" stroke="#7556ac"/>
+  <text class="node-title" x="1030" y="307" text-anchor="middle">Zero-DCE</text>
+  <text class="node-title" x="1030" y="334" text-anchor="middle">scratch</text>
+  <text class="small" x="1030" y="365" text-anchor="middle">Locally trained</text>
+
+  <rect class="node" x="1155" y="275" width="180" height="125" fill="#ffffff" stroke="#7556ac"/>
+  <text class="node-title" x="1245" y="307" text-anchor="middle">Pretrained</text>
+  <text class="node-title" x="1245" y="334" text-anchor="middle">Zero-DCE++</text>
+  <text class="small" x="1245" y="365" text-anchor="middle">Official checkpoint</text>
+
+  <rect class="node" x="1365" y="275" width="165" height="125" fill="#ffffff" stroke="#7556ac"/>
+  <text class="node-title" x="1448" y="302" text-anchor="middle">Zero-DCE++</text>
+  <text class="node-title" x="1448" y="329" text-anchor="middle">+ bilateral</text>
+  <text class="small" x="1448" y="356" text-anchor="middle">Hybrid learned</text>
+  <text class="small" x="1448" y="378" text-anchor="middle">pipeline</text>
+
+  <!-- Dataset fan-out -->
+  <path class="arrow" d="M800 135 V165 H190 V296"/>
+  <path class="arrow" d="M800 135 V165 H510 V271"/>
+  <path class="arrow" d="M800 135 V165 H740 V271"/>
+  <path class="arrow" d="M800 135 V165 H1030 V271"/>
+  <path class="arrow" d="M800 135 V165 H1245 V271"/>
+  <path class="arrow" d="M800 135 V165 H1448 V271"/>
+
+  <!-- Detector nodes -->
+  <rect class="node" x="165" y="565" width="790" height="110" fill="#fff4e8" stroke="#b97837"/>
+  <text class="node-title" x="560" y="606" text-anchor="middle">Matched-domain YOLOv8n detector</text>
+  <text class="body" x="560" y="640" text-anchor="middle">Raw, CLAHE, CLAHE + bilateral, pretrained Zero-DCE++, and hybrid inputs</text>
+
+  <rect class="node" x="1045" y="565" width="390" height="110" fill="#fff4e8" stroke="#b97837"/>
+  <text class="node-title" x="1240" y="606" text-anchor="middle">Fixed raw-domain YOLOv8n</text>
+  <text class="body" x="1240" y="640" text-anchor="middle">Direct cascade for Zero-DCE scratch</text>
+
+  <!-- Input-domain arrows -->
+  <path class="arrow" d="M190 405 V515 H310 V561"/>
+  <path class="arrow" d="M510 380 V515 H435 V561"/>
+  <path class="arrow" d="M740 380 V515 H560 V561"/>
+  <path class="arrow" d="M1245 400 V515 H685 V561"/>
+  <path class="arrow" d="M1448 400 V515 H810 V561"/>
+  <path class="arrow" d="M1030 400 V515 H1240 V561"/>
+
+  <!-- Evaluation -->
+  <rect class="node" x="405" y="760" width="790" height="105" fill="#fff8df" stroke="#b99a3e"/>
+  <text class="node-title" x="800" y="802" text-anchor="middle">Controlled held-out test evaluation</text>
+  <text class="body" x="800" y="836" text-anchor="middle">Same ExDark split · 40 detector epochs · YOLOv8n input size 640 × 640</text>
+
+  <path class="arrow" d="M560 675 V715 H715 V756"/>
+  <path class="arrow" d="M1240 675 V715 H885 V756"/>
+
+  <!-- Metrics -->
+  <rect class="node" x="360" y="925" width="880" height="85" fill="#eaf7ec" stroke="#4e9560"/>
+  <text class="node-title" x="800" y="960" text-anchor="middle">Reported detection metrics</text>
+  <text class="body" x="800" y="990" text-anchor="middle">Precision · Recall · mAP@0.5 · mAP@0.5:0.95</text>
+  <path class="arrow" d="M800 865 V921"/>
+</svg>

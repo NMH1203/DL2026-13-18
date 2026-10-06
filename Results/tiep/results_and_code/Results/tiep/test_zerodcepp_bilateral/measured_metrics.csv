@@ -1,2 +1,0 @@
-weights,data,split,precision,recall,map50,map50_95
-/kaggle/working/Project18/Results/tiep/yolo_zerodcepp_bilateral_e40/weights/best.pt,/kaggle/working/Project18/Dataset/exdark_yolo_zerodcepp_bilateral_d5_s25/data.yaml,test,0.7040146820072515,0.5677365713175111,0.6243888464492481,0.2920873423148605
