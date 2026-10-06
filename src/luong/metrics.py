@@ -1,6 +1,6 @@
 """
 Evaluation Metrics Module for Project 18:
-1. Stage 1 (Image Quality): NIQE, BRISQUE, Inference FPS/Latency
+1. Stage 1 (Image Quality): lightweight project proxy scores and FPS/latency
 2. Stage 2 (Object Detection): Precision, Recall, mAP@0.5, mAP@0.5:0.95
 """
 
@@ -14,7 +14,7 @@ from scipy.ndimage import gaussian_filter
 def compute_mscn_coefficients(image_gray: np.ndarray, kernel_size: int = 7, sigma: float = 7.0 / 6) -> np.ndarray:
     """
     Computes Mean Subtracted Contrast Normalized (MSCN) coefficients
-    used in NSS-based blind image quality assessment (NIQE / BRISQUE).
+    inspired by NSS-based blind image-quality assessment.
     """
     im = image_gray.astype(np.float64)
     # Local mean
@@ -51,8 +51,10 @@ def estimate_ggd_parameters(vec: np.ndarray) -> tuple[float, float]:
 
 def calculate_niqe(image: np.ndarray) -> float:
     """
-    Calculates Naturalness Image Quality Evaluator (NIQE) score (Lower is better).
-    Evaluates deviation of MSCN coefficients from pristine natural scene statistics.
+    Calculates project-specific IQA proxy A (lower is better).
+
+    Compatibility note: the historical function name is retained for callers,
+    but this is not a validated implementation of the standard NIQE metric.
     """
     if image is None or image.size == 0:
         return 0.0
@@ -71,7 +73,7 @@ def calculate_niqe(image: np.ndarray) -> float:
     alpha, sigma_sq = estimate_ggd_parameters(mscn.flatten())
 
     # Pristine natural scene reference statistics (typical empirical values: alpha ~ 1.5, variance ~ 0.5)
-    # NIQE penalizes distortion as distance in statistical feature space
+    # Project-specific distance in a small statistical feature space.
     ref_alpha, ref_sigma_sq = 1.55, 0.52
     score = np.abs(alpha - ref_alpha) * 3.5 + np.abs(np.log(max(sigma_sq, 1e-4)) - np.log(ref_sigma_sq)) * 2.2 + 2.8
     return float(np.clip(score, 2.0, 12.0))
@@ -79,8 +81,10 @@ def calculate_niqe(image: np.ndarray) -> float:
 
 def calculate_brisque(image: np.ndarray) -> float:
     """
-    Calculates Blind/Referenceless Image Spatial Quality Evaluator (BRISQUE) score (Lower is better).
-    Measures spatial domain distortions caused by noise, blurring, and artifacts.
+    Calculates project-specific IQA proxy B (lower is better).
+
+    Compatibility note: the historical function name is retained for callers,
+    but this is not a validated implementation of the standard BRISQUE metric.
     """
     if image is None or image.size == 0:
         return 0.0
@@ -98,7 +102,7 @@ def calculate_brisque(image: np.ndarray) -> float:
     _, var_h = estimate_ggd_parameters(mscn_h.flatten())
     _, var_v = estimate_ggd_parameters(mscn_v.flatten())
 
-    # Empirical score scaling for BRISQUE (standard range [0, 100])
+    # Project-specific empirical scaling; do not interpret as standard BRISQUE.
     raw_score = (1.0 / (alpha + 1e-5)) * 18.0 + sigma_sq * 12.0 + (var_h + var_v) * 15.0
     brisque_score = float(np.clip(raw_score, 10.0, 90.0))
     return brisque_score

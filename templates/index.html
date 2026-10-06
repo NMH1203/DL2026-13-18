@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 18 Demo: Low-Light Image Enhancement & Downstream Recognition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #121722;
+      --bg-card: rgba(23, 29, 44, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(99, 102, 241, 0.3);
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-main: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(6, 182, 212, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(244, 63, 94, 0.08) 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.8rem;
+    }
+
+    .header-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .badge-topic { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-tech { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.25); }
+    .badge-data { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.25); }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 950px;
+    }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: var(--font-main);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid var(--border-highlight);
+    }
+
+    /* Control Panel */
+    .control-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr auto;
+      gap: 1.5rem;
+      align-items: end;
+    }
+
+    @media (max-width: 1024px) {
+      .control-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .select-input, .file-input {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.9rem;
+      font-family: var(--font-main);
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .select-input:focus {
+      border-color: var(--accent-indigo);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .slider-val {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      min-width: 38px;
+    }
+
+    .run-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.8rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+      height: 44px;
+    }
+    .run-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    }
+    .run-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Four-view comparison grid */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .scenario-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 680px) {
+      .scenario-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .scenario-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .scenario-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .sc-header {
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sc-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+    .sc-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .tag-sc1 { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    .tag-sc2 { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .tag-sc3 { background: rgba(244, 63, 94, 0.25); color: #fda4af; }
+    .tag-sc4 { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
+
+    .sc-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .image-container {
+      position: relative;
+      background: #000;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .sc-body {
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    }
+    .stat-label { color: var(--text-muted); }
+    .stat-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); }
+
+    .callout-box {
+      font-size: 0.76rem;
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      line-height: 1.4;
+      margin-top: auto;
+    }
+    .callout-warning {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      color: #fca5a5;
+    }
+    .callout-success {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #86efac;
+    }
+    .callout-neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    /* Weight Inspection Table */
+    .inspection-section {
+      display: none;
+    }
+    .inspection-section.active {
+      display: block;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 1rem;
+    }
+    .info-table th {
+      background: rgba(255, 255, 255, 0.05);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .info-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    .badge-status {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 3px solid #ffffff;
+      width: 18px;
+      height: 18px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-badge-row">
+        <span class="badge badge-topic">Topic 18 Research Demo</span>
+        <span class="badge badge-tech">PyTorch 2.0+ & Ultralytics YOLOv8</span>
+        <span class="badge badge-data">ExDark Benchmark v12 (12 Classes)</span>
+      </div>
+      <h1>Low-Light Image Enhancement & Downstream Recognition</h1>
+      <p class="subtitle">
+        Interactive local demonstration comparing human visual quality against machine perception.
+        Compare raw, classical, and learned enhancement views. Aggregate controlled-test metrics are shown separately from predictions on a selected image.
+      </p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-demo-btn" onclick="switchTab('demo')">
+        <span>📸</span> Four-View Qualitative Demo
+      </button>
+      <button class="tab-btn" id="tab-weights-btn" onclick="switchTab('weights')">
+        <span>🔬</span> Checkpoint Weights Inspection
+      </button>
+      <button class="tab-btn" id="tab-bench-btn" onclick="switchTab('benchmark')">
+        <span>📊</span> Scientific Findings & Benchmark Metrics
+      </button>
+    </div>
+
+    <!-- TAB 1: FOUR-VIEW QUALITATIVE DEMO -->
+    <div id="view-demo">
+      <div class="control-card">
+        <div class="control-grid">
+          <!-- Sample Selector -->
+          <div class="form-group">
+            <label class="form-label">Select Sample Image</label>
+            <select id="sample-select" class="select-input" onchange="loadSelectedSample()">
+              <option value="">Loading sample images...</option>
+            </select>
+          </div>
+
+          <!-- Custom Upload -->
+          <div class="form-group">
+            <label class="form-label">Or Upload Custom Image</label>
+            <input type="file" id="file-upload" class="file-input" accept="image/*">
+          </div>
+
+          <!-- Confidence Slider -->
+          <div class="form-group">
+            <label class="form-label">YOLO Confidence Threshold: <span id="conf-val" class="slider-val">0.25</span></label>
+            <div class="slider-row">
+              <input type="range" id="conf-slider" min="0.10" max="0.80" step="0.05" value="0.25" style="width: 100%; accent-color: var(--accent-indigo);" oninput="document.getElementById('conf-val').innerText = this.value">
+            </div>
+          </div>
+
+          <!-- Run Button -->
+          <button id="run-btn" class="run-btn" onclick="runEvaluation()">
+            <div id="btn-spinner" class="spinner"></div>
+            <span id="btn-text">Run 4 Qualitative Views</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Scenarios Display Grid -->
+      <div class="scenario-grid">
+        <!-- Scenario 1 -->
+        <div class="scenario-card">
+          <div class="sc-header">
+            <div class="sc-title">
+              <span>Scenario 1</span>
+              <span class="sc-tag tag-sc1">Baseline</span>
+            </div>
+            <div class="sc-desc">Raw Dark Baseline → Dark YOLOv8n</div>
+          </div>
+          <div class="image-container">
+            <img id="img-sc1" src="" alt="Scenario 1 Output">
+          </div>
+          <div class="sc-body">
+            <div class="stat-row">
+              <span class="stat-label">Detected Objects</span>
+              <span id="det-sc1" class="stat-val">-</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">IQA Proxy A</span>
+              <span id="niqe-sc1" class="stat-val">-</span>
+            </div>
+            <div class="callout-box callout-neutral">
+              Raw-image reference. Aggregate metrics are reported separately in the Benchmark tab.
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenario 2 -->
+        <div class="scenario-card">
+          <div class="sc-header">
+            <div class="sc-title">
+              <span>Scenario 2</span>
+              <span class="sc-tag tag-sc2">CLAHE + Bilateral</span>
+            </div>
+            <div class="sc-desc">CIE LAB CLAHE → Dark YOLOv8n</div>
+          </div>
+          <div class="image-container">
+            <img id="img-sc2" src="" alt="Scenario 2 Output">
+          </div>
+          <div class="sc-body">
+            <div class="stat-row">
+              <span class="stat-label">Detected Objects</span>
+              <span id="det-sc2" class="stat-val">-</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">IQA Proxy A</span>
+              <span id="niqe-sc2" class="stat-val">-</span>
+            </div>
+            <div class="callout-box callout-success">
+              CLAHE on luminance followed by bilateral filtering. This panel is a single-image result.
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenario 3 -->
+        <div class="scenario-card">
+          <div class="sc-header">
+            <div class="sc-title">
+              <span>Scenario 3</span>
+              <span class="sc-tag tag-sc3">From-Scratch Zero-DCE</span>
+            </div>
+            <div class="sc-desc">Local Zero-DCE → Baseline YOLOv8n</div>
+          </div>
+          <div class="image-container">
+            <img id="img-sc3" src="" alt="Scenario 3 Output">
+          </div>
+          <div class="sc-body">
+            <div class="stat-row">
+              <span class="stat-label">Detected Objects</span>
+              <span id="det-sc3" class="stat-val">-</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">IQA Proxy A</span>
+              <span id="niqe-sc3" class="stat-val">-</span>
+            </div>
+            <div class="callout-box callout-warning">
+              This local from-scratch model is distinct from the pretrained Zero-DCE++ row in the controlled benchmark.
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenario 4 -->
+        <div class="scenario-card">
+          <div class="sc-header">
+            <div class="sc-title">
+              <span>Scenario 4</span>
+              <span class="sc-tag tag-sc4">Adapted Detector</span>
+            </div>
+            <div class="sc-desc">Local Zero-DCE → Adapted YOLOv8n</div>
+          </div>
+          <div class="image-container">
+            <img id="img-sc4" src="" alt="Scenario 4 Output">
+          </div>
+          <div class="sc-body">
+            <div class="stat-row">
+              <span class="stat-label">Detected Objects</span>
+              <span id="det-sc4" class="stat-val">-</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">IQA Proxy A</span>
+              <span id="niqe-sc4" class="stat-val">-</span>
+            </div>
+            <div class="callout-box callout-success">
+              Qualitative view using the detector adapted to locally enhanced images; no aggregate metric is attached here.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: WEIGHTS INSPECTION -->
+    <div id="view-weights" class="inspection-section">
+      <div class="control-card">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Checkpoint Model Weights Breakdown</h2>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Detailed architecture metadata extracted directly from <code>Results/weights/</code>.
+        </p>
+
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>Model Component</th>
+              <th>File Name</th>
+              <th>Size</th>
+              <th>Parameters</th>
+              <th>Framework</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="weights-table-body">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading weights inspection...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: BENCHMARKS -->
+    <div id="view-benchmark" class="inspection-section">
+      <div class="control-card">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Official Experimental Findings & Comparison Table</h2>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Controlled results on the common 734-image ExDark test split (<code>Results/comparisons_table.csv</code>).
+        </p>
+
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Enhancement Pipeline</th>
+              <th>Detector Checkpoint</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>mAP@0.5</th>
+              <th>mAP@0.5:0.95</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Raw Dark Baseline</strong></td>
+              <td>None (Raw Dark)</td>
+              <td><code>yolov8n_dark_best.pt</code></td>
+              <td>0.6671</td>
+              <td>0.5883</td>
+              <td>0.6146</td>
+              <td>0.2862</td>
+            </tr>
+            <tr>
+              <td><strong>2. CLAHE</strong></td>
+              <td>CIE LAB + CLAHE</td>
+              <td><code>yolov8n_dark_best.pt</code></td>
+              <td>0.6543</td>
+              <td><strong>0.5935</strong></td>
+              <td>0.6188</td>
+              <td>0.2872</td>
+            </tr>
+            <tr>
+              <td><strong>3. CLAHE + Bilateral</strong></td>
+              <td>CIE LAB + CLAHE + Bilateral</td>
+              <td><code>yolov8n_dark_best.pt</code></td>
+              <td>0.6572</td>
+              <td>0.5800</td>
+              <td>0.6161</td>
+              <td>0.2856</td>
+            </tr>
+            <tr>
+              <td><strong>4. Zero-DCE++</strong></td>
+              <td>Pretrained Zero-DCE++</td>
+              <td><code>matched YOLOv8n</code></td>
+              <td>0.6771</td>
+              <td>0.5281</td>
+              <td>0.5881</td>
+              <td>0.2705</td>
+            </tr>
+            <tr>
+              <td><strong>5. Zero-DCE++ + Bilateral</strong></td>
+              <td>Pretrained Zero-DCE++ + Bilateral</td>
+              <td><code>matched YOLOv8n</code></td>
+              <td><strong style="color: #67e8f9;">0.7040</strong></td>
+              <td>0.5677</td>
+              <td><strong style="color: #6ee7b7;">0.6244</strong></td>
+              <td><strong>0.2921</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.getElementById('view-demo').style.display = tab === 'demo' ? 'block' : 'none';
+      document.getElementById('view-weights').style.display = tab === 'weights' ? 'block' : 'none';
+      document.getElementById('view-benchmark').style.display = tab === 'benchmark' ? 'block' : 'none';
+
+      document.getElementById('tab-demo-btn').className = 'tab-btn' + (tab === 'demo' ? ' active' : '');
+      document.getElementById('tab-weights-btn').className = 'tab-btn' + (tab === 'weights' ? ' active' : '');
+      document.getElementById('tab-bench-btn').className = 'tab-btn' + (tab === 'benchmark' ? ' active' : '');
+
+      if (tab === 'weights') {
+        loadWeightsData();
+      }
+    }
+
+    async function loadSamples() {
+      try {
+        const res = await fetch('/api/samples');
+        const data = await res.json();
+        const sel = document.getElementById('sample-select');
+        sel.innerHTML = '';
+        data.samples.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.path;
+          opt.innerText = s.name;
+          sel.appendChild(opt);
+        });
+        if (data.samples.length > 0) {
+          runEvaluation();
+        }
+      } catch (e) {
+        console.error("Could not load samples:", e);
+      }
+    }
+
+    async function loadWeightsData() {
+      try {
+        const res = await fetch('/api/inspect');
+        const data = await res.json();
+        const tbody = document.getElementById('weights-table-body');
+        tbody.innerHTML = '';
+        data.weights.forEach(w => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${w.name}</strong></td>
+            <td><code>${w.filename}</code></td>
+            <td>${w.size}</td>
+            <td>${w.parameters}</td>
+            <td>${w.framework}</td>
+            <td><span class="badge-status">VALID CHECKPOINT</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error("Could not load weights info:", e);
+      }
+    }
+
+    async function runEvaluation() {
+      const btn = document.getElementById('run-btn');
+      const spinner = document.getElementById('btn-spinner');
+      const text = document.getElementById('btn-text');
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      text.innerText = 'Evaluating...';
+
+      try {
+        const fileInput = document.getElementById('file-upload');
+        const sampleSelect = document.getElementById('sample-select');
+        const confSlider = document.getElementById('conf-slider');
+
+        const formData = new FormData();
+        formData.append('confidence', confSlider.value);
+
+        if (fileInput.files.length > 0) {
+          formData.append('file', fileInput.files[0]);
+        } else {
+          formData.append('sample_path', sampleSelect.value);
+        }
+
+        const res = await fetch('/api/evaluate', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result.error) {
+          alert('Error: ' + result.error);
+          return;
+        }
+
+        // Populate Scenarios
+        for (let i = 1; i <= 4; i++) {
+          const sc = result.scenarios[i - 1];
+          document.getElementById(`img-sc${i}`).src = sc.image_data;
+          document.getElementById(`det-sc${i}`).innerText = `${sc.detections.length} objects`;
+          document.getElementById(`niqe-sc${i}`).innerText = sc.niqe.toFixed(2);
+        }
+
+      } catch (e) {
+        console.error("Evaluation failed:", e);
+        alert("Evaluation failed: " + e);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.innerText = 'Run 4 Qualitative Views';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSamples();
+    });
+  </script>
+</body>
+</html>

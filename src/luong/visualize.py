@@ -9,6 +9,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+# Stable per-class colors used by the integrated demo.  The mapping lives in
+# Luong's package so callers do not depend on duplicate modules under ``src/``.
+CLASS_COLORS = {
+    0: (168, 85, 247),
+    1: (6, 182, 212),
+    2: (234, 179, 8),
+    3: (249, 115, 22),
+    4: (236, 72, 153),
+    5: (147, 51, 234),
+    6: (16, 185, 129),
+    7: (59, 130, 246),
+    8: (217, 119, 6),
+    9: (239, 68, 68),
+    10: (99, 102, 241),
+    11: (20, 184, 166),
+}
+
+
 def draw_bounding_boxes(image_rgb: np.ndarray, boxes, class_names: dict, color=(0, 255, 0), thickness=2) -> np.ndarray:
     """
     Draws bounding boxes and labels on an image.
