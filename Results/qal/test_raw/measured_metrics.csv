@@ -1,0 +1,2 @@
+weights,split,precision,recall,map50,map50_95
+/kaggle/working/Low-Light-Image-Enhancement-and-Downstream-Recognition/runs/detect/raw_dark_baseline_yolov8n/weights/best.pt,test,0.6670786781073602,0.5882766318848923,0.6146146513123084,0.28618669709989664
