@@ -1,0 +1,2 @@
+weights,data,split,precision,recall,map50,map50_95
+C:\18.deeplearning\Low-Light-Image-Enhancement-and-Downstream-Recognition\Results\ninh\zerodce_e40_gpu_\weights\best.pt,C:\18.deeplearning\Low-Light-Image-Enhancement-and-Downstream-Recognition\Dataset\ninh_zerodce\data.yaml,test,0.6770818707815591,0.5281302031357715,0.5881025186919995,0.27050808928459324

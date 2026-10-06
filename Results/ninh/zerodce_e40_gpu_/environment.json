@@ -1,0 +1,8 @@
+{
+  "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "torch": "2.5.1+cu121",
+  "ultralytics": "8.4.172",
+  "device": "0",
+  "data": "C:\\18.deeplearning\\Low-Light-Image-Enhancement-and-Downstream-Recognition\\Dataset\\ninh_zerodce\\data.yaml",
+  "seed": 42
+}
