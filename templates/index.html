@@ -228,7 +228,7 @@
       transform: none;
     }
 
-    /* 4-Scenario Grid */
+    /* Four-view comparison grid */
     .scenario-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -416,14 +416,14 @@
       <h1>Low-Light Image Enhancement & Downstream Recognition</h1>
       <p class="subtitle">
         Interactive local demonstration comparing human visual quality against machine perception.
-        Investigate classical DIP (CLAHE) versus deep learning (Zero-DCE), revealing the <strong>Domain Shift</strong> paradox and the necessity of <strong>Co-Design Retraining</strong>.
+        Compare raw, classical, and learned enhancement views. Aggregate controlled-test metrics are shown separately from predictions on a selected image.
       </p>
     </header>
 
     <!-- Navigation Tabs -->
     <div class="tabs">
       <button class="tab-btn active" id="tab-demo-btn" onclick="switchTab('demo')">
-        <span>📸</span> 4-Scenario Comparative Demo
+        <span>📸</span> Four-View Qualitative Demo
       </button>
       <button class="tab-btn" id="tab-weights-btn" onclick="switchTab('weights')">
         <span>🔬</span> Checkpoint Weights Inspection
@@ -433,7 +433,7 @@
       </button>
     </div>
 
-    <!-- TAB 1: 4-SCENARIO DEMO -->
+    <!-- TAB 1: FOUR-VIEW QUALITATIVE DEMO -->
     <div id="view-demo">
       <div class="control-card">
         <div class="control-grid">
@@ -462,7 +462,7 @@
           <!-- Run Button -->
           <button id="run-btn" class="run-btn" onclick="runEvaluation()">
             <div id="btn-spinner" class="spinner"></div>
-            <span id="btn-text">Run 4 Scenarios</span>
+            <span id="btn-text">Run 4 Qualitative Views</span>
           </button>
         </div>
       </div>
@@ -487,19 +487,11 @@
               <span id="det-sc1" class="stat-val">-</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">NIQE (Naturalness)</span>
+              <span class="stat-label">IQA Proxy A</span>
               <span id="niqe-sc1" class="stat-val">-</span>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark mAP@0.5</span>
-              <span class="stat-val">62.35%</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark Precision</span>
-              <span class="stat-val">68.02%</span>
-            </div>
             <div class="callout-box callout-neutral">
-              Unenhanced dark input. Baseline detector trained natively on nighttime representations.
+              Raw-image reference. Aggregate metrics are reported separately in the Benchmark tab.
             </div>
           </div>
         </div>
@@ -522,19 +514,11 @@
               <span id="det-sc2" class="stat-val">-</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">NIQE (Naturalness)</span>
+              <span class="stat-label">IQA Proxy A</span>
               <span id="niqe-sc2" class="stat-val">-</span>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark mAP@0.5</span>
-              <span class="stat-val" style="color: #6ee7b7;">67.47% (+5.1%)</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark Precision</span>
-              <span class="stat-val">68.02%</span>
-            </div>
             <div class="callout-box callout-success">
-              Local histogram equalization on L channel with bilateral filtering suppresses high-ISO noise.
+              CLAHE on luminance followed by bilateral filtering. This panel is a single-image result.
             </div>
           </div>
         </div>
@@ -544,9 +528,9 @@
           <div class="sc-header">
             <div class="sc-title">
               <span>Scenario 3</span>
-              <span class="sc-tag tag-sc3">Domain Shift Drop</span>
+              <span class="sc-tag tag-sc3">From-Scratch Zero-DCE</span>
             </div>
-            <div class="sc-desc">Zero-DCE → Dark YOLOv8n (Unretrained)</div>
+            <div class="sc-desc">Local Zero-DCE → Baseline YOLOv8n</div>
           </div>
           <div class="image-container">
             <img id="img-sc3" src="" alt="Scenario 3 Output">
@@ -557,19 +541,11 @@
               <span id="det-sc3" class="stat-val">-</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">NIQE (Naturalness)</span>
+              <span class="stat-label">IQA Proxy A</span>
               <span id="niqe-sc3" class="stat-val">-</span>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark mAP@0.5</span>
-              <span class="stat-val" style="color: #fda4af;">22.91% (-39.4%)</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark Precision</span>
-              <span class="stat-val">41.31%</span>
-            </div>
             <div class="callout-box callout-warning">
-              <strong>Domain Shift:</strong> Zero-DCE boosts human visibility but amplifies hidden ISO sensor noise, confusing dark-trained features!
+              This local from-scratch model is distinct from the pretrained Zero-DCE++ row in the controlled benchmark.
             </div>
           </div>
         </div>
@@ -579,9 +555,9 @@
           <div class="sc-header">
             <div class="sc-title">
               <span>Scenario 4</span>
-              <span class="sc-tag tag-sc4">Co-Design Recovery</span>
+              <span class="sc-tag tag-sc4">Adapted Detector</span>
             </div>
-            <div class="sc-desc">Zero-DCE → Retrained YOLOv8n</div>
+            <div class="sc-desc">Local Zero-DCE → Adapted YOLOv8n</div>
           </div>
           <div class="image-container">
             <img id="img-sc4" src="" alt="Scenario 4 Output">
@@ -592,19 +568,11 @@
               <span id="det-sc4" class="stat-val">-</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">NIQE (Naturalness)</span>
+              <span class="stat-label">IQA Proxy A</span>
               <span id="niqe-sc4" class="stat-val">-</span>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark mAP@0.5</span>
-              <span class="stat-val" style="color: #67e8f9;">59.22% (+36.3%)</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Benchmark Precision</span>
-              <span class="stat-val" style="color: #67e8f9; font-weight: 800;">69.17% (Peak)</span>
-            </div>
             <div class="callout-box callout-success">
-              <strong>Co-Design Alignment:</strong> Retrained detector adapts to brightened textures, reaching highest precision across the study.
+              Qualitative view using the detector adapted to locally enhanced images; no aggregate metric is attached here.
             </div>
           </div>
         </div>
@@ -644,7 +612,7 @@
       <div class="control-card">
         <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Official Experimental Findings & Comparison Table</h2>
         <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-          Results recorded on Kaggle Tesla T4 GPU across 7,345 ExDark benchmark images (<code>Results/comparisons_table.csv</code>).
+          Controlled results on the common 734-image ExDark test split (<code>Results/comparisons_table.csv</code>).
         </p>
 
         <table class="info-table">
@@ -664,37 +632,46 @@
               <td><strong>1. Raw Dark Baseline</strong></td>
               <td>None (Raw Dark)</td>
               <td><code>yolov8n_dark_best.pt</code></td>
-              <td>0.6802</td>
-              <td><strong>0.5778</strong></td>
-              <td>0.6235</td>
-              <td>0.2909</td>
+              <td>0.6671</td>
+              <td>0.5883</td>
+              <td>0.6146</td>
+              <td>0.2862</td>
             </tr>
             <tr>
-              <td><strong>2. CLAHE Cascaded</strong></td>
+              <td><strong>2. CLAHE</strong></td>
+              <td>CIE LAB + CLAHE</td>
+              <td><code>yolov8n_dark_best.pt</code></td>
+              <td>0.6543</td>
+              <td><strong>0.5935</strong></td>
+              <td>0.6188</td>
+              <td>0.2872</td>
+            </tr>
+            <tr>
+              <td><strong>3. CLAHE + Bilateral</strong></td>
               <td>CIE LAB + CLAHE + Bilateral</td>
               <td><code>yolov8n_dark_best.pt</code></td>
-              <td>0.6802</td>
-              <td><strong>0.5778</strong></td>
-              <td><strong style="color: #6ee7b7;">0.6747</strong></td>
-              <td><strong>0.3204</strong></td>
+              <td>0.6572</td>
+              <td>0.5800</td>
+              <td>0.6161</td>
+              <td>0.2856</td>
             </tr>
             <tr>
-              <td><strong>3. Zero-DCE Cascaded</strong></td>
-              <td>Zero-DCE (PyTorch)</td>
-              <td><code>yolov8n_dark_best.pt</code></td>
-              <td>0.4131</td>
-              <td>0.2450</td>
-              <td><span style="color: #fda4af;">0.2291</span></td>
-              <td>0.0970</td>
+              <td><strong>4. Zero-DCE++</strong></td>
+              <td>Pretrained Zero-DCE++</td>
+              <td><code>matched YOLOv8n</code></td>
+              <td>0.6771</td>
+              <td>0.5281</td>
+              <td>0.5881</td>
+              <td>0.2705</td>
             </tr>
             <tr>
-              <td><strong>4. Zero-DCE Retrained</strong></td>
-              <td>Zero-DCE Retrained</td>
-              <td><code>yolov8n_zerodce_best.pt</code></td>
-              <td><strong style="color: #67e8f9;">0.6917</strong></td>
-              <td>0.5430</td>
-              <td>0.5922</td>
-              <td>0.2737</td>
+              <td><strong>5. Zero-DCE++ + Bilateral</strong></td>
+              <td>Pretrained Zero-DCE++ + Bilateral</td>
+              <td><code>matched YOLOv8n</code></td>
+              <td><strong style="color: #67e8f9;">0.7040</strong></td>
+              <td>0.5677</td>
+              <td><strong style="color: #6ee7b7;">0.6244</strong></td>
+              <td><strong>0.2921</strong></td>
             </tr>
           </tbody>
         </table>
@@ -808,7 +785,7 @@
       } finally {
         btn.disabled = false;
         spinner.style.display = 'none';
-        text.innerText = 'Run 4 Scenarios';
+        text.innerText = 'Run 4 Qualitative Views';
       }
     }
 

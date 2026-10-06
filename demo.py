@@ -4,13 +4,17 @@ Interactive Local Demo & Comprehensive Weight Inspector (demo.py)
 
 This script provides:
 1. Detailed technical inspection of model weights stored in Results/weights/
-2. End-to-end local inference across all 4 research scenarios:
+2. End-to-end local inference across four qualitative views:
    - Scenario 1: Raw Dark Baseline (Raw Dark Image -> Baseline Dark YOLOv8n)
    - Scenario 2: CLAHE Cascaded (CLAHE + Bilateral -> Baseline Dark YOLOv8n)
-   - Scenario 3: Zero-DCE Cascaded (Zero-DCE Enhancement -> Baseline Dark YOLOv8n) [Domain Shift]
-   - Scenario 4: Zero-DCE Retrained (Zero-DCE Enhancement -> Retrained YOLOv8n) [Co-Design]
-3. Image Quality Assessment (NIQE, BRISQUE) and Downstream Detection Metrics
+   - Scenario 3: Zero-DCE Enhancement -> Baseline Dark YOLOv8n
+   - Scenario 4: Zero-DCE Enhancement -> Retrained YOLOv8n
+3. Project-specific image-quality proxy scores and per-image detections
 4. Side-by-side 4-panel visual comparison export
+
+The four demo views are not identical to the five input variants in the
+controlled benchmark. This script therefore does not attach aggregate test
+metrics to individual demo panels.
 """
 
 import argparse
@@ -153,7 +157,7 @@ def inspect_weights(weights_dir: Path = WEIGHTS_DIR):
             imgsz = train_args.get("imgsz", 640)
             names = ckpt.get("names", {})
 
-            print(f"   - Strategy: Co-Design Retrained on Zero-DCE Enhanced Data")
+            print(f"   - Strategy: Detector adapted to locally enhanced training data")
             print(f"   - Total Parameters: {total_params:,}")
             print(f"   - Training Epoch: {epoch}")
             print(f"   - Input Dimension: {imgsz}x{imgsz}")
@@ -175,15 +179,15 @@ def inspect_weights(weights_dir: Path = WEIGHTS_DIR):
 
 
 # ==============================================================================
-# 4-SCENARIO DEMO INFERENCE ENGINE
+# FOUR-VIEW QUALITATIVE DEMO INFERENCE ENGINE
 # ==============================================================================
 class FourScenarioDemoEngine:
     """
-    Orchestrates the 4 research scenarios on a given low-light image:
+    Orchestrates four qualitative views on a given low-light image:
     1. Raw Dark Baseline
     2. CLAHE + Bilateral Cascaded
-    3. Zero-DCE Cascaded (Domain Shift demonstration)
-    4. Zero-DCE Retrained (Co-Design recovery)
+    3. Local from-scratch Zero-DCE with the baseline detector
+    4. Local from-scratch Zero-DCE with the adapted detector
     """
 
     def __init__(self, device: torch.device):
@@ -289,7 +293,8 @@ class FourScenarioDemoEngine:
         zerodce_bgr = self.enhance_zerodce(raw_bgr)
         t_zerodce = (time.perf_counter() - t0) * 1000.0
 
-        # 2. Image Quality Assessment (NIQE, BRISQUE)
+        # 2. Project-specific IQA proxies. These functions are not validated
+        # implementations of the standard NIQE and BRISQUE algorithms.
         iqa = {
             "raw": {"niqe": calculate_niqe(raw_bgr), "brisque": calculate_brisque(raw_bgr)},
             "clahe": {"niqe": calculate_niqe(clahe_bgr), "brisque": calculate_brisque(clahe_bgr)},
@@ -303,10 +308,10 @@ class FourScenarioDemoEngine:
         # Scenario 2: CLAHE -> Dark YOLO
         res_sc2, det_sc2 = self.detect(self.yolo_dark, clahe_bgr, conf=conf)
 
-        # Scenario 3: Zero-DCE -> Dark YOLO (Domain Shift)
+        # Scenario 3: local from-scratch Zero-DCE -> baseline dark YOLO
         res_sc3, det_sc3 = self.detect(self.yolo_dark, zerodce_bgr, conf=conf)
 
-        # Scenario 4: Zero-DCE -> Retrained YOLO (Co-Design)
+        # Scenario 4: local from-scratch Zero-DCE -> adapted YOLO
         res_sc4, det_sc4 = self.detect(self.yolo_retrained, zerodce_bgr, conf=conf)
 
         return {
@@ -329,9 +334,7 @@ class FourScenarioDemoEngine:
                     "detections": det_sc1,
                     "niqe": iqa["raw"]["niqe"],
                     "brisque": iqa["raw"]["brisque"],
-                    "academic_map50": "62.35%",
-                    "academic_precision": "68.02%",
-                    "academic_note": "Benchmark baseline on unenhanced nighttime data",
+                    "demo_note": "Raw-image reference for this qualitative demo",
                 },
                 {
                     "id": 2,
@@ -342,35 +345,29 @@ class FourScenarioDemoEngine:
                     "detections": det_sc2,
                     "niqe": iqa["clahe"]["niqe"],
                     "brisque": iqa["clahe"]["brisque"],
-                    "academic_map50": "67.47%",
-                    "academic_precision": "68.02%",
-                    "academic_note": "Highest mAP (+5.1%); bilateral filter suppresses ISO noise",
+                    "demo_note": "CLAHE and bilateral filtering before the baseline detector",
                 },
                 {
                     "id": 3,
-                    "name": "Scenario 3: Zero-DCE Cascaded",
-                    "enhancement": "Deep Learning Zero-DCE",
+                    "name": "Scenario 3: From-Scratch Zero-DCE + Baseline Detector",
+                    "enhancement": "Local From-Scratch Zero-DCE",
                     "detector": "yolov8n_dark_best.pt (Unretrained)",
                     "input_image_bgr": zerodce_bgr,
                     "detections": det_sc3,
                     "niqe": iqa["zerodce"]["niqe"],
                     "brisque": iqa["zerodce"]["brisque"],
-                    "academic_map50": "22.91%",
-                    "academic_precision": "41.31%",
-                    "academic_note": "Domain Shift failure! Amplified sensor noise confuses dark detector",
+                    "demo_note": "Local from-scratch Zero-DCE before the baseline detector",
                 },
                 {
                     "id": 4,
-                    "name": "Scenario 4: Zero-DCE Retrained",
-                    "enhancement": "Deep Learning Zero-DCE",
+                    "name": "Scenario 4: From-Scratch Zero-DCE + Adapted Detector",
+                    "enhancement": "Local From-Scratch Zero-DCE",
                     "detector": "yolov8n_zerodce_best.pt (Retrained)",
                     "input_image_bgr": zerodce_bgr,
                     "detections": det_sc4,
                     "niqe": iqa["zerodce"]["niqe"],
                     "brisque": iqa["zerodce"]["brisque"],
-                    "academic_map50": "59.22%",
-                    "academic_precision": "69.17%",
-                    "academic_note": "Co-design recovery (+36.3%); PEAK precision across entire study",
+                    "demo_note": "Local from-scratch Zero-DCE before the adapted detector",
                 },
             ],
         }
@@ -425,17 +422,17 @@ def render_annotated_scenario_panel(scenario: dict) -> np.ndarray:
     # Banner background color based on scenario
     banner_colors = {
         1: (45, 45, 45),     # Dark gray
-        2: (30, 80, 40),     # Dark green (CLAHE best mAP)
-        3: (30, 30, 100),    # Dark red (Domain shift drop)
-        4: (90, 60, 20),     # Dark cyan/blue (Recovery & top precision)
+        2: (30, 80, 40),     # Dark green
+        3: (30, 30, 100),    # Dark red
+        4: (90, 60, 20),     # Dark cyan/blue
     }
     b_color = banner_colors.get(scenario["id"], (40, 40, 40))
     cv2.rectangle(canvas, (0, 0), (w, banner_height), b_color, -1)
 
     # Banner texts
     title_text = scenario["name"]
-    meta_text = f"Det: {len(scenario['detections'])} objs | NIQE: {scenario['niqe']:.2f} | mAP: {scenario['academic_map50']}"
-    prec_text = f"Precision: {scenario['academic_precision']} ({scenario['detector']})"
+    meta_text = f"Det: {len(scenario['detections'])} objs | IQA proxy A: {scenario['niqe']:.2f}"
+    prec_text = f"Detector: {scenario['detector']}"
 
     cv2.putText(canvas, title_text, (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(canvas, meta_text, (10, 48), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (220, 220, 220), 1, cv2.LINE_AA)
@@ -464,7 +461,7 @@ def create_composite_figure(eval_result: dict, save_path: Path | str | None = No
         save_path = Path(save_path)
         save_path.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(save_path), composite)
-        print(f"💾 Saved 4-Scenario Composite Comparison to:\n   👉 {save_path.resolve()}")
+        print(f"💾 Saved four-view qualitative comparison to:\n   👉 {save_path.resolve()}")
 
     return composite
 
@@ -472,7 +469,7 @@ def create_composite_figure(eval_result: dict, save_path: Path | str | None = No
 def print_console_summary(eval_result: dict):
     """Prints a beautiful, informative summary table in the terminal."""
     print("\n" + "=" * 90)
-    print(f"📸 4-SCENARIO DEMO EVALUATION FOR: {eval_result['image_name']}")
+    print(f"📸 FOUR-VIEW QUALITATIVE DEMO FOR: {eval_result['image_name']}")
     print("=" * 90)
 
     rows = []
@@ -486,23 +483,18 @@ def print_console_summary(eval_result: dict):
             "Scenario": sc["name"].split(":")[1].strip(),
             "Enhancement": sc["enhancement"],
             "Detector": sc["detector"],
-            "NIQE (IQA)": f"{sc['niqe']:.2f}",
-            "BRISQUE": f"{sc['brisque']:.2f}",
+            "IQA proxy A": f"{sc['niqe']:.2f}",
+            "IQA proxy B": f"{sc['brisque']:.2f}",
             "Objects": det_summary,
-            "Study mAP@0.5": sc["academic_map50"],
-            "Study Precision": sc["academic_precision"],
         })
 
     df = pd.DataFrame(rows)
     print(df.to_string(index=False))
     print("=" * 90)
-    print("💡 SCIENTIFIC TAKEAWAYS:")
-    print("  1. Scenario 1 (Baseline): Establishes dark detection performance (mAP = 62.4%).")
-    print("  2. Scenario 2 (CLAHE): Peak mAP (67.5%), bilateral filter dampens ISO noise.")
-    print("  3. Scenario 3 (Zero-DCE Cascaded): Demonstrates DOMAIN SHIFT! mAP drops from 62.4% to 22.9%.")
-    print("     (Amplified sensor noise confuses unretrained dark feature extractors).")
-    print("  4. Scenario 4 (Zero-DCE Retrained): Demonstrates CO-DESIGN RECOVERY! mAP rebounds to 59.2%")
-    print("     and achieves the HIGHEST PRECISION of the entire study (69.2%), suppressing false positives.")
+    print("ℹ️  INTERPRETATION NOTE:")
+    print("  These outputs are qualitative predictions for the selected image.")
+    print("  Use Results/comparisons_table.csv for aggregate controlled-test metrics.")
+    print("  The four demo views are not the same as the five benchmark input variants.")
     print("=" * 90 + "\n")
 
 
@@ -511,7 +503,7 @@ def print_console_summary(eval_result: dict):
 # ==============================================================================
 def main():
     parser = argparse.ArgumentParser(
-        description="Project 18: Low-Light Image Enhancement & 4-Scenario Downstream Demo"
+        description="Project 18: four-view qualitative enhancement and detection demo"
     )
     parser.add_argument(
         "--inspect-weights",
@@ -596,7 +588,7 @@ def main():
             return
         input_images = [chosen]
 
-    print(f"\n🚀 Running 4-Scenario Evaluation on {len(input_images)} image(s)...")
+    print(f"\n🚀 Running four-view qualitative demo on {len(input_images)} image(s)...")
 
     for idx, img_path in enumerate(input_images):
         print(f"\n[{idx+1}/{len(input_images)}] Processing: {img_path}")

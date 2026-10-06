@@ -244,8 +244,8 @@ def phase_2_stage1_enhancement(device: torch.device, epochs: int = 5, run_batch:
         print(f"📂 Loading existing Zero-DCE weights from {weights_path}")
         model.load_state_dict(torch.load(weights_path, map_location=device))
 
-    # Evaluate No-Reference IQA metrics (NIQE, BRISQUE, FPS) on a representative sample
-    print("\n📊 Computing No-Reference IQA (NIQE, BRISQUE) on sample images...")
+    # Evaluate lightweight project-specific IQA proxies on a representative sample.
+    print("\n📊 Computing project-specific IQA proxies on sample images...")
     sample_imgs = list((DATASET_DARK_DIR / "test" / "images").glob("*.*"))[:20]
     if not sample_imgs and train_imgs:
         sample_imgs = train_imgs[:20]
@@ -287,7 +287,7 @@ def phase_2_stage1_enhancement(device: torch.device, epochs: int = 5, run_batch:
     }
 
     print("\n📋 Image Quality Assessment Summary (Lower is better):")
-    print(f"   {'Method':<12} | {'NIQE':<8} | {'BRISQUE':<8}")
+    print(f"   {'Method':<12} | {'Proxy A':<8} | {'Proxy B':<8}")
     print("   " + "-" * 32)
     for method, (niqe, brisque) in iqa_summary.items():
         print(f"   {method:<12} | {niqe:<8.2f} | {brisque:<8.2f}")
@@ -299,11 +299,11 @@ def phase_2_stage1_enhancement(device: torch.device, epochs: int = 5, run_batch:
 
 
 # ==============================================================================
-# PHASE 3: STAGE 2 - OBJECT DETECTION EXPERIMENTS (4 SCENARIOS)
+# PHASE 3: STAGE 2 - MEASURED OBJECT-DETECTION EXPERIMENTS
 # ==============================================================================
 def phase_3_yolov8_experiments(device: torch.device, epochs: int = 15, batch_size: int = 16):
     print("\n" + "=" * 70)
-    print("🔹 PHASE 3: Stage 2 - Downstream Object Detection (4 Scenarios)")
+    print("🔹 PHASE 3: Stage 2 - Measured Downstream Object Detection")
     print("=" * 70)
 
     results_table = []
@@ -344,32 +344,22 @@ def phase_3_yolov8_experiments(device: torch.device, epochs: int = 15, batch_siz
     results_table.append(metrics_s1)
     print(f"   ✅ Scenario 1: mAP@0.5 = {metrics_s1['map50']:.4f}, mAP@0.5:0.95 = {metrics_s1['map50_95']:.4f}")
 
-    # SCENARIO 2: CLAHE Cascaded (Evaluating dark model on CLAHE)
-    print("\n🎯 [SCENARIO 2] CLAHE Cascaded Evaluation...")
-    # Typically demonstrates traditional DIP baseline performance
-    metrics_s2 = metrics_s1.copy()
-    metrics_s2["name"] = "2. CLAHE Cascaded"
-    metrics_s2["method"] = "CLAHE + Bilateral"
-    # Expected relative improvement from classical DIP
-    metrics_s2["map50"] = round(min(metrics_s1["map50"] * 1.05 + 0.02, 0.95), 4)
-    metrics_s2["map50_95"] = round(min(metrics_s1["map50_95"] * 1.05 + 0.015, 0.95), 4)
-    results_table.append(metrics_s2)
-    print(f"   ✅ Scenario 2: mAP@0.5 = {metrics_s2['map50']:.4f}, mAP@0.5:0.95 = {metrics_s2['map50_95']:.4f}")
+    # A CLAHE result may only be added after evaluating a dedicated processed
+    # test dataset. Never derive detector metrics from the raw baseline.
+    print("\nℹ️ CLAHE rows are not synthesized in this phase.")
+    print("   Use the controlled experiment workflow and record its measured CSV row.")
 
     # SCENARIO 3: Zero-DCE Cascaded (Evaluating dark model on Zero-DCE dataset)
     print("\n🎯 [SCENARIO 3] Zero-DCE Cascaded Evaluation...")
     if zerodce_yaml.exists():
         val_s3 = model_dark.val(data=str(zerodce_yaml), imgsz=640, split="test", device="cuda:0" if device.type == "cuda" else "cpu")
         metrics_s3 = extract_yolo_metrics(val_s3)
+        metrics_s3["name"] = "3. From-Scratch Zero-DCE + Baseline Detector"
+        metrics_s3["method"] = "Local From-Scratch Zero-DCE"
+        results_table.append(metrics_s3)
+        print(f"   ✅ Scenario 3: mAP@0.5 = {metrics_s3['map50']:.4f}, mAP@0.5:0.95 = {metrics_s3['map50_95']:.4f}")
     else:
-        metrics_s3 = metrics_s1.copy()
-        metrics_s3["map50"] = round(metrics_s1["map50"] + 0.065, 4)
-        metrics_s3["map50_95"] = round(metrics_s1["map50_95"] + 0.045, 4)
-
-    metrics_s3["name"] = "3. Zero-DCE Cascaded"
-    metrics_s3["method"] = "Zero-DCE (PyTorch)"
-    results_table.append(metrics_s3)
-    print(f"   ✅ Scenario 3: mAP@0.5 = {metrics_s3['map50']:.4f}, mAP@0.5:0.95 = {metrics_s3['map50_95']:.4f}")
+        print(f"   ⚠️ Skipped: measured dataset configuration not found: {zerodce_yaml}")
 
     # SCENARIO 4: Zero-DCE Retrained & Aligned
     print("\n🎯 [SCENARIO 4] Zero-DCE Retrained & Aligned Model...")
@@ -398,15 +388,12 @@ def phase_3_yolov8_experiments(device: torch.device, epochs: int = 15, batch_siz
         model_retrained = YOLO(str(zerodce_weight) if zerodce_weight.exists() else "yolov8n.pt")
         val_s4 = model_retrained.val(data=str(zerodce_yaml), imgsz=640, split="test", device="cuda:0" if device.type == "cuda" else "cpu")
         metrics_s4 = extract_yolo_metrics(val_s4)
+        metrics_s4["name"] = "4. From-Scratch Zero-DCE + Adapted Detector"
+        metrics_s4["method"] = "Local From-Scratch Zero-DCE + Adapted YOLOv8n"
+        results_table.append(metrics_s4)
+        print(f"   ✅ Scenario 4: mAP@0.5 = {metrics_s4['map50']:.4f}, mAP@0.5:0.95 = {metrics_s4['map50_95']:.4f}")
     else:
-        metrics_s4 = metrics_s3.copy()
-        metrics_s4["map50"] = round(metrics_s3["map50"] + 0.052, 4)
-        metrics_s4["map50_95"] = round(metrics_s3["map50_95"] + 0.038, 4)
-
-    metrics_s4["name"] = "4. Zero-DCE Retrained"
-    metrics_s4["method"] = "Zero-DCE Retrained"
-    results_table.append(metrics_s4)
-    print(f"   ✅ Scenario 4: mAP@0.5 = {metrics_s4['map50']:.4f}, mAP@0.5:0.95 = {metrics_s4['map50_95']:.4f}")
+        print(f"   ⚠️ Skipped: measured dataset configuration not found: {zerodce_yaml}")
 
     return results_table
 
@@ -419,15 +406,29 @@ def phase_4_summary_and_plots(results_table: list[dict]):
     print("🔹 PHASE 4: Results Summary & Scientific Plots")
     print("=" * 70)
 
-    # 1. Export CSV
+    # When phase 4 runs alone, visualize the curated controlled-test table.
+    # Runtime phase-3 results are always written to a separate file so they
+    # cannot overwrite the canonical five-row comparison.
+    loaded_canonical = False
+    if not results_table:
+        canonical_path = RESULTS_DIR / "comparisons_table.csv"
+        if not canonical_path.exists():
+            print(f"⚠️ No results supplied and canonical table not found: {canonical_path}")
+            return
+        results_table = pd.read_csv(canonical_path).to_dict("records")
+        loaded_canonical = True
+        print(f"📂 Loaded controlled-test results from: {canonical_path}")
+
     df = pd.DataFrame(results_table)
-    csv_path = RESULTS_DIR / "comparisons_table.csv"
-    df.to_csv(csv_path, index=False)
-    print(f"💾 Saved comprehensive results table to: {csv_path}")
+    if not loaded_canonical:
+        csv_path = RESULTS_DIR / "comparisons_table_runtime.csv"
+        df.to_csv(csv_path, index=False)
+        print(f"💾 Saved measured runtime results to: {csv_path}")
     print("\n" + df.to_markdown(index=False))
 
     # 2. Plot mAP comparison chart
-    chart_path = FIGURES_DIR / "map_comparison.png"
+    chart_name = "map_comparison.png" if loaded_canonical else "map_comparison_runtime.png"
+    chart_path = FIGURES_DIR / chart_name
     plot_metrics_comparison(results_table, save_path=chart_path)
     print(f"📈 Saved mAP comparison chart to: {chart_path}")
 

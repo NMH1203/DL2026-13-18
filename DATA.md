@@ -1,248 +1,130 @@
-# DATA.md: Dataset Documentation & Reproduction Guide
+# Dataset and Reproduction Notes
 
-**Project:** Low-Light Image Enhancement and Downstream Recognition (Topic 18)  
-**Task:** Low-Level Illumination Enhancement & Downstream Object Detection  
-**Primary Benchmark:** Exclusively Dark (ExDark) Dataset (Formatted for YOLOv8)  
+## Dataset provenance
 
----
+This project uses the Exclusively Dark (ExDark) object-detection dataset in YOLO format.
 
-## Table of Contents
-1. [Overview & Official Dataset URLs](#1-overview--official-dataset-urls)
-2. [Dataset Version & Technical Metadata](#2-dataset-version--technical-metadata)
-3. [Data Splits & Class Distribution](#3-data-splits--class-distribution)
-4. [Preprocessing Procedures](#4-preprocessing-procedures)
-   - [4.1 Baseline Dark Data Standardization](#41-baseline-dark-data-standardization)
-   - [4.2 Traditional DIP Enhancement: CLAHE + Bilateral Filtering](#42-traditional-dip-enhancement-clahe--bilateral-filtering)
-   - [4.3 Deep Learning Enhancement: Zero-DCE Pipeline](#43-deep-learning-enhancement-zero-dce-pipeline)
-5. [Scripts Required to Reproduce Experimental Data](#5-scripts-required-to-reproduce-experimental-data)
-   - [5.1 Environment Preparation](#51-environment-preparation)
-   - [5.2 Dataset Acquisition Script](#52-dataset-acquisition-script)
-   - [5.3 Phase 1: Sanity & Verification Script](#53-phase-1-sanity--verification-script)
-   - [5.4 Phase 2: Zero-DCE Training & Dataset Synthesis Script](#54-phase-2-zero-dce-training--dataset-synthesis-script)
-   - [5.5 Full End-to-End Experiment Reproduction](#55-full-end-to-end-experiment-reproduction)
-6. [Processed Datasets & Downloadable Links](#6-processed-datasets--downloadable-links)
+- Original project: https://github.com/cs-chan/ExDark-Dataset
+- Paper: *Getting to Know Low-Light Images with the Exclusively Dark Dataset*
+- DOI: https://doi.org/10.1016/j.cviu.2018.10.010
+- Standardized YOLO export used by the project: https://universe.roboflow.com/project-h68de/exdark-kd37x/dataset/12
+- License shown by the selected Roboflow release: CC BY 4.0. Confirm the release page when redistributing an archive.
 
+Record the export version and download date with every experiment. Do not replace the dataset silently with another ExDark conversion because class order and split membership may differ.
 
-## 1. Overview & Official Dataset URLs
+## Local layout
 
-This research investigates the interaction between low-light image enhancement and downstream machine perception (object detection) using the **Exclusively Dark (ExDark)** dataset. ExDark is an internationally recognized benchmark dedicated exclusively to low-light scenarios, containing real-world images captured in natural twilight, night, indoor dim, and low-exposure outdoor conditions.
-
-### 1.1 Official Academic Source & Publications
-- **Primary Research Paper:**  
-  *Getting to Know Low-light Images with the Exclusively Dark Dataset*,  
-  Yuen Peng Loh and Chee Seng Chan,  
-  *Computer Vision and Image Understanding (CVIU)*, Vol. 178, pp. 30–42, 2019.  
-  - **Official GitHub Repository:** [https://github.com/cs-chan/ExDark-Dataset](https://github.com/cs-chan/ExDark-Dataset)
-  - **ArXiv Preprint:** [https://arxiv.org/abs/1805.11227](https://arxiv.org/abs/1805.11227)
-  - **DOI:** [10.1016/j.cviu.2019.01.006](https://doi.org/10.1016/j.cviu.2019.01.006)
-
-### 1.2 Official Standardized Benchmark Distribution (Roboflow Universe)
-- **Roboflow Universe Project:** [https://universe.roboflow.com/project-h68de/exdark-kd37x](https://universe.roboflow.com/project-h68de/exdark-kd37x)
-- **Direct Version 12 Release Link:** [https://universe.roboflow.com/project-h68de/exdark-kd37x/dataset/12](https://universe.roboflow.com/project-h68de/exdark-kd37x/dataset/12)
-- **Format:** YOLOv8 PyTorch format (Normalized bounding box coordinates).
-- **License:** Creative Commons Attribution 4.0 International ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)).
-
-### 1.3 Cloud Platform Reproduction Mirror
-- **Kaggle Public Dataset Mirror:** `ExDark YOLO Low-Light Detection_NML(USTH)`
-- **Kaggle Execution Guide:** Documented in [`Doc/runkagle.md`](Doc/runkagle.md) for automated execution on free Kaggle Tesla T4 GPU instances.
-
----
-
-## 2. Dataset Version & Technical Metadata
-
-| Attribute | Specification | Notes |
-| :--- | :--- | :--- |
-| **Dataset Name** | ExDark (Exclusively Dark) Benchmark | Standardized for YOLOv8 |
-| **Official Version** | **v12** | Exported: December 22, 2024 (Snapshot: 2024-03-21 12:34 AM) |
-| **Total Images** | 7,345 images | Real-world low-light indoor/outdoor scenes |
-| **Annotation Format** | YOLOv8 Annotation Format (`.txt`) | `class_id x_center y_center width height` (normalized $\in [0, 1]$) |
-| **Image Resolution** | Standardized to $640 \times 640$ pixels | Pre-scaled for optimal YOLO feature pyramid alignment |
-| **Color Channels** | 3-Channel RGB / BGR | 8-bit per channel depth |
-| **Number of Classes** | 12 distinct object classes | Common foreground objects under low-light conditions |
-| **License** | CC BY 4.0 | Public academic and research use |
-
----
-
-## 3. Data Splits & Class Distribution
-
-The dataset comprises **7,345 images** structured into standardized train, validation, and test splits with a strict **70% / 20% / 10%** partitioning:
-
-### 3.1 Partition Summary
-
-| Split Name | Image Count | Label File Count | Percentage (%) | Local Storage Path |
-| :--- | :---: | :---: | :---: | :--- |
-| **Train** | 5,142 | 5,142 | 70.0% | `Dataset/exdark_yolo_dark/train/` |
-| **Validation (Val)** | 1,469 | 1,469 | 20.0% | `Dataset/exdark_yolo_dark/valid/` |
-| **Test** | 734 | 734 | 10.0% | `Dataset/exdark_yolo_dark/test/` |
-| **Total** | **7,345** | **7,345** | **100.0%** | `Dataset/exdark_yolo_dark/` |
-
-### 3.2 Annotated Object Classes (12 Classes)
-
-Bounding box annotations follow the normalized format:
-$$\text{Annotation Line:} \quad \langle \text{class\_id} \rangle \quad \langle x_{\text{center}} \rangle \quad \langle y_{\text{center}} \rangle \quad \langle w \rangle \quad \langle h \rangle$$
-where coordinates are scaled within $[0.0, 1.0]$.
-
-| Class ID | Class Name (English) | Vietnamese Translation | Domain Context & Examples |
-| :---: | :--- | :--- | :--- |
-| **0** | `Bicycle` | Xe đạp | Mountain bikes, city bicycles, parked/moving bikes |
-| **1** | `Boat` | Thuyền | Small boats, rowboats, barges, passenger ferries |
-| **2** | `Bottle` | Chai | Glass beverage bottles, plastic bottles, cans |
-| **3** | `Bus` | Xe buýt | Public transit buses, tourist coaches, minibuses |
-| **4** | `Cat` | Mèo | Domestic felines in outdoor/indoor dim environments |
-| **5** | `Cup` | Cốc / Ly | Drinking mugs, coffee cups, tumblers |
-| **6** | `Motorbike` | Xe máy | Motorcycles, motor scooters, mopeds |
-| **7** | `People` | Người | Pedestrians, commuters, night-shift workers |
-| **8** | `Table` | Bàn | Dining tables, desks, coffee tables |
-| **9** | `Car` | Ô tô | Passenger sedans, SUVs, taxis, vans |
-| **10** | `Chair` | Ghế | Armchairs, dining chairs, office chairs, stools |
-| **11** | `Dog` | Chó | Domestic and stray dogs |
-
-Dataset configuration metadata is specified in [`Dataset/exdark_yolo_dark/data.yaml`](Dataset/exdark_yolo_dark/data.yaml):
-```yaml
-path: Dataset/exdark_yolo_dark
-train: train/images
-val: valid/images
-test: test/images
-
-names:
-  0: Bicycle
-  1: Boat
-  2: Bottle
-  3: Bus
-  4: Cat
-  5: Cup
-  6: Motorbike
-  7: People
-  8: Table
-  9: car
-  10: chair
-  11: dog
+```text
+Dataset/exdark_yolo_dark/
+├── data.yaml
+├── train/
+│   ├── images/
+│   └── labels/
+├── valid/
+│   ├── images/
+│   └── labels/
+└── test/
+    ├── images/
+    └── labels/
 ```
 
----
+The expected split counts are:
 
-## 4. Preprocessing Procedures
+| Split | Images | Labels |
+|---|---:|---:|
+| Train | 5,142 | 5,142 |
+| Validation | 1,469 | 1,469 |
+| Test | 734 | 734 |
+| Total | 7,345 | 7,345 |
 
-The experimental pipeline processes raw images through three distinct modalities to compare human visual quality versus machine perception:
+The 12 classes used by the repository are Bicycle, Boat, Bottle, Bus, Cat, Cup, Motorbike, People, Table, Car, Chair, and Dog. Treat `Dataset/exdark_yolo_dark/data.yaml` as the authoritative class-index mapping for a run.
 
-### 4.1 Baseline Dark Data Standardization
-Applied during the original curation into YOLO format:
-1. **EXIF Normalization:** Automated stripping of EXIF metadata and uniform orientation alignment to prevent rotation distortions.
-2. **Resolution Standardization:** Uniform resizing to $640 \times 640$ pixels, aligning with YOLOv8 default feature map strides ($P3, P4, P5$).
-3. **Tensor Normalization:** Pixel intensity values mapped from integer range $[0, 255]$ to floating-point tensors in $[0.0, 1.0]$.
+YOLO labels use normalized rows in the form:
 
-### 4.2 Traditional DIP Enhancement: CLAHE + Bilateral Filtering
-Implemented in [`src/luong/preprocess_dip.py`](src/luong/preprocess_dip.py):
-1. **Color Space Decoupling:** Converted from BGR to **CIE LAB** space to separate chromaticity ($a^*, b^*$) from luminance ($L^*$).
-2. **Luminance Equalization (CLAHE):** Contrast-Limited Adaptive Histogram Equalization is applied exclusively to the $L^*$ channel:
-   - `clipLimit = 2.0` (prevents over-amplification of noise).
-   - `tileGridSize = (8, 8)` (enforces local adaptive contrast expansion).
-3. **Recombination:** Merged with original $a^*$ and $b^*$ channels, converted back to BGR to preserve chromatic balance without color casting.
-4. **Edge-Preserving Denoising (Bilateral Filter):** Applied with kernel diameter $d = 7$, $\sigma_{\text{color}} = 50.0$, and $\sigma_{\text{space}} = 50.0$ to suppress high-ISO sensor noise while keeping object boundaries sharp.
+```text
+class_id x_center y_center width height
+```
 
-### 4.3 Deep Learning Enhancement: Zero-DCE Pipeline
-Implemented in [`src/luong/model_zerodce.py`](src/luong/model_zerodce.py) and [`src/luong/loss_zerodce.py`](src/luong/loss_zerodce.py):
-1. **Zero-Reference Learning:** Trained without paired normal-light ground truth, guided entirely by four non-reference physical loss constraints:
-   - **Spatial Consistency Loss ($\mathcal{L}_{\text{spa}}$):** Preserves gradients across adjacent patches to prevent blurring.
-   - **Exposure Control Loss ($\mathcal{L}_{\text{exp}}$):** Drives average local patch intensity toward well-exposed level $E = 0.6$.
-   - **Color Constancy Loss ($\mathcal{L}_{\text{col}}$):** Enforces Gray-World color balance across R, G, and B channels.
-   - **Illumination Smoothness Loss ($\mathcal{L}_{\text{tv\_A}}$):** Applies Total Variation regularization across curve parameter maps $\mathcal{A}$.
-2. **Iterative Curve Transformation:** The 7-layer convolutional network (`DCENet`, ~79K parameters) predicts 24 parameter maps across 8 recursive iterations:
-   $$LE_n(x) = LE_{n-1}(x) + \mathcal{A}_n(x) \cdot LE_{n-1}(x) \cdot (1 - LE_{n-1}(x))$$
-3. **Annotation Coordinate Invariance:** Because LE-Curve transformations alter only radiometric pixel intensities without geometric displacement, bounding box coordinates are preserved 1-to-1 without re-annotation.
+Image resizing is performed by the selected training or inference pipeline. Do not claim that every source file is physically stored at 640 × 640 unless this has been verified directly.
 
----
+## Controlled input variants
 
-## 5. Scripts Required to Reproduce Experimental Data
+The current result table compares five radiometric variants while preserving image geometry and bounding-box coordinates:
 
-All datasets, preprocessing transformations, and experimental evaluations can be fully reproduced using the scripts included in the repository.
+1. Raw dark.
+2. CLAHE.
+3. CLAHE + bilateral filtering.
+4. Pretrained Zero-DCE++.
+5. Pretrained Zero-DCE++ + bilateral filtering.
 
-### 5.1 Environment Preparation
-Install the required dependencies:
+The local from-scratch Zero-DCE model is a separate learned-enhancement experiment. Its outputs and metrics must be labelled separately from pretrained Zero-DCE++.
+
+### Classical preprocessing
+
+`src/luong/preprocess_dip.py` applies CLAHE to the luminance channel in CIE LAB space. Bilateral filtering is an optional second operation and must be recorded as a distinct configuration.
+
+### Learned preprocessing
+
+`src/luong/model_zerodce.py` and `src/luong/loss_zerodce.py` implement the local from-scratch Zero-DCE branch. The default loss weights are:
+
+```text
+L_total = L_spa + 10 L_exp + 5 L_col + 200 L_tv
+```
+
+Pretrained Zero-DCE++ results must identify the exact external checkpoint and implementation used. Store the checkpoint hash with the experiment record.
+
+## Verification and execution
+
+Install dependencies from the repository root:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5.2 Dataset Acquisition Script
-To download and extract the official Roboflow v12 benchmark distribution into the repository structure:
+Verify the dataset structure and labels:
 
-#### Method 1: Python Roboflow API
-```python
-from roboflow import Roboflow
-
-rf = Roboflow(api_key="YOUR_ROBOFLOW_API_KEY")
-project = rf.workspace("project-h68de").project("exdark-kd37x")
-version = project.version(12)
-dataset = version.download("yolov8", location="Dataset/exdark_yolo_dark")
-```
-
-#### Method 2: Direct Command-line Download (cURL / Wget)
-```bash
-mkdir -p Dataset
-cd Dataset
-# Download official v12 archive
-curl -L -o exdark_v12.zip "https://universe.roboflow.com/ds/your_export_token?key=your_key"
-unzip -q exdark_v12.zip -d exdark_yolo_dark
-rm exdark_v12.zip
-cd ..
-```
-
-### 5.3 Phase 1: Sanity & Verification Script
-Verifies dataset structure, image counts, label mappings, and `data.yaml` validity:
 ```bash
 python run.py --phase 1
 ```
-*Expected Output:*
-```text
-📊 ExDark Classes Configuration:
-   [0] Bicycle
-   ...
-   [11] dog
-   - Train: 5142 images, 5142 label files
-   - Valid: 1469 images, 1469 label files
-   - Test : 734 images, 734 label files
-✅ Phase 1 Data Verification completed successfully!
+
+Train the local from-scratch Zero-DCE implementation and generate its enhanced dataset:
+
+```bash
+python run.py --phase 2 --epochs_dce 10
 ```
 
-### 5.4 Phase 2: Zero-DCE Training & Dataset Synthesis Script
-Trains the self-supervised Zero-DCE enhancement network and batch-processes all 7,345 images into the enhanced dataset directory `Dataset/exdark_yolo_zerodce/`:
+Run the detector stages only after checking the available options:
+
 ```bash
-python run.py --phase 2 --epochs_dce 5
+python run.py --help
+python run.py --phase 3,4 --epochs_yolo 40 --batch_size 16
 ```
 
-For custom DIP CLAHE enhancement processing on sample images:
+Run the classical preprocessor on a bundled sample:
+
 ```bash
-python src/luong/preprocess_dip.py --input Doc/samples/sample_1.jpg --output Results/clahe_output.jpg
+python src/luong/preprocess_dip.py --input sample_enhanced_images/1_raw_dark/image_1_raw.jpg --output Results/clahe_output.jpg
 ```
 
-### 5.5 Full End-to-End Experiment Reproduction
-Executes the complete experimental pipeline across all 6 phases (Environment Setup, Data Verification, Zero-DCE Generation, YOLOv8 Training across 4 scenarios, and Comparative Evaluation):
-```bash
-python run.py --phase all --epochs_dce 5 --epochs_yolo 15 --batch_size 16
-```
+Generated directories such as `Dataset/exdark_yolo_zerodce/` are not guaranteed to exist in a fresh clone. Create them through the corresponding pipeline and preserve the source split and labels.
 
----
+## Experimental records
 
-## 6. Processed Datasets & Downloadable Links
+`Results/comparisons_table.csv` is the canonical table currently used by the README and report. It contains the controlled 734-image test results for the five variants listed above.
 
-To facilitate reproducibility without requiring full re-training, all datasets, processed data splits, and model weights are made available:
+For each new result, record:
 
-| Dataset / Asset Name | Description & Volume | Local Storage Location | Official Access / Download Link |
-| :--- | :--- | :--- | :--- |
-| **Raw ExDark YOLO Dark** | Baseline low-light benchmark (7,345 images) | `Dataset/exdark_yolo_dark/` | [Roboflow Universe v12](https://universe.roboflow.com/project-h68de/exdark-kd37x/dataset/12) |
-| **Processed: Zero-DCE Enhanced Dataset** | Full ExDark dataset enhanced via Zero-DCE (7,345 images + labels) | `Dataset/exdark_yolo_zerodce/` | Generated via `python run.py --phase 2`<br>Mirror: [Kaggle Dataset Hub](https://www.kaggle.com/datasets) (`ExDark YOLO Low-Light Detection_NML(USTH)`) |
-| **Processed: CLAHE Enhanced Samples** | Contrast-enhanced benchmark images for DIP baseline | `Results/figures/` & `sample_enhanced_images/` | Generated via `src/luong/preprocess_dip.py` |
-| **Model Weights: Zero-DCE** | Trained DCE-Net weights (~320 KB) | `Results/weights/zerodce_best.pth` | Self-supervised PyTorch checkpoint |
-| **Model Weights: YOLO Dark Baseline** | YOLOv8n detector trained on raw dark images | `Results/weights/yolov8n_dark_best.pt` | Downstream Scenario 1 Checkpoint |
-| **Model Weights: YOLO Zero-DCE Retrained** | YOLOv8n detector retrained on Zero-DCE data | `Results/weights/yolov8n_zerodce_best.pt` | Downstream Scenario 4 Checkpoint |
-| **Benchmark Results Table** | Quantitative evaluation results across 4 scenarios | `Results/comparisons_table.csv` | Full CSV metric table |
+- source dataset version and split;
+- preprocessing method and parameter values;
+- enhancement checkpoint and hash;
+- detector checkpoint and hash;
+- YOLO version, image size, confidence threshold, IoU threshold, batch size, and device;
+- exact command and random seed;
+- precision, recall, mAP@0.5, and mAP@0.5:0.95;
+- generated CSV, logs, and representative failure cases.
 
-### Direct Archive Download for Pre-Processed Datasets
-If reproducing on Google Colab or remote GPU instances, pre-packaged archives can be directly fetched:
-```bash
-# Ingest processed dataset package directly
-python -c "
-import urllib.request, zipfile, os
-print('Downloading processed datasets...')
-# Processed dataset download command
-"
+The functions named `calculate_niqe` and `calculate_brisque` in `src/luong/metrics.py` are project-specific proxy scores. They are not standard NIQE or BRISQUE measurements and must not be reported under those standard names without replacing or validating the implementation.
+
+## Availability limitations
+
+This repository contains sample images and selected checkpoints. It does not currently provide a verified direct archive URL for every processed dataset. Do not use a generic Kaggle search page as if it were a reproducible download link. Add an exact, accessible dataset URL only after verifying it from a clean environment.

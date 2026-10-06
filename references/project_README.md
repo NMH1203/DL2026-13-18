@@ -32,7 +32,7 @@ LE(I; A) = I + A * I * (1 - I)
 
 where `I` is a normalized pixel value and `A` is a learned curve parameter. Repeating the operation allows stronger enhancement while adapting to image content. The model predicts curve maps instead of directly synthesizing RGB values.
 
-The original DCE-Net uses seven convolution layers and skip connections. Zero-DCE++ uses depthwise separable convolutions and predicts curves at reduced resolution before upsampling. The implementation must follow its checkpoint's architecture and curve sign exactly; see [src/enhancement.py](../src/enhancement.py).
+The original DCE-Net uses seven convolution layers and skip connections. Zero-DCE++ uses depthwise separable convolutions and predicts curves at reduced resolution before upsampling. The implementation must follow its checkpoint's architecture and curve sign exactly. The local from-scratch implementation is documented in [`src/luong/model_zerodce.py`](../src/luong/model_zerodce.py); the pretrained Zero-DCE++ pipeline must additionally record its external implementation and checkpoint identity.
 
 Zero-reference training may combine four losses:
 
@@ -87,7 +87,7 @@ This schedule is a plan, not a record of completed experiments.
 
 ## 6. Evaluation
 
-For image quality, consider NIQE and BRISQUE where their implementations and evaluation conditions are documented. Lower values generally indicate better scores under these methods; they do not by themselves establish better detection.
+For image quality, use standard NIQE or BRISQUE only when validated implementations and evaluation conditions are documented. The current functions in `src/luong/metrics.py` are project-specific proxies and must be labelled as such. Image-quality scores do not by themselves establish better detection.
 
 For detection, report precision, recall, mAP at IoU 0.50, and mAP averaged over IoU 0.50 to 0.95. Measure latency or frames per second on the same device and include preprocessing in pipeline timing. Inspect predictions visually, especially where bright signs, headlights, noise, or small objects may affect boxes.
 
@@ -95,7 +95,7 @@ Useful ablations include changing the exposure target, comparing enhancement met
 
 ## 7. Reproducibility and deliverables
 
-Keep source export details, exact model checkpoints, configuration, software versions, class names, and image and label hashes with the results. Store the prepared datasets and reports together. [KAGGLE.md](../KAGGLE.md) explains how to run the preparation workflow, and [DATA.md](../DATA.md) records the source and verification procedure.
+Keep source export details, exact model checkpoints, configuration, software versions, class names, and image and label hashes with the results. Store the prepared datasets and reports together. [`DATA.md`](../DATA.md) records the current source, layout, and reproduction procedure.
 
 Deliverables may include the baseline and enhanced datasets, detector checkpoints, comparison tables, plots, side-by-side images, and a short demonstration. Detector training, image-quality scoring, and final scientific conclusions require separate experiment runs; the dataset preparation pipeline alone does not produce them.
 

@@ -3,7 +3,7 @@ Project 18: Low-Light Image Enhancement and Downstream Recognition
 Interactive Local Web Application (app.py)
 
 Runs a local Flask web server delivering:
-- Interactive 4-Scenario Evaluation Studio (Raw Dark, CLAHE, Zero-DCE Cascaded, Zero-DCE Retrained)
+- Interactive four-view qualitative studio (raw, CLAHE, local Zero-DCE with two detectors)
 - Live Checkpoint Weights Inspector (Extracts parameter counts, tensor sizes, architectures)
 - Real-time confidence threshold tuning and sample/upload testing
 """
@@ -137,7 +137,7 @@ def inspect_weights_endpoint():
             "filename": retrained_path.name,
             "size": f"{size_mb:.2f} MB",
             "parameters": f"{p_count:,} params (~3.0M)",
-            "framework": "Ultralytics YOLOv8n (Co-Designed)",
+            "framework": "Ultralytics YOLOv8n (adapted detector)",
         })
 
     return jsonify({"weights": results})
@@ -145,7 +145,7 @@ def inspect_weights_endpoint():
 
 @app.route("/api/evaluate", methods=["POST"])
 def evaluate_endpoint():
-    """Runs 4-scenario evaluation on uploaded or selected image."""
+    """Runs the four-view qualitative demo on an uploaded or selected image."""
     conf = float(request.form.get("confidence", 0.25))
 
     # Read image from upload or file path
