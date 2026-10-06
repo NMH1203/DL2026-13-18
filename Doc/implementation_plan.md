@@ -60,7 +60,7 @@ src/
 #### [NEW] [src/__init__.py](file:///home/minhluong/Documents/Project18/src/__init__.py)
 * Định nghĩa package, export các class và hàm chính.
 
-#### [NEW] [src/model_zerodce.py](file:///home/minhluong/Documents/Project18/src/model_zerodce.py)
+#### [NEW] [src/luong/model_zerodce.py](file:///home/minhluong/Documents/Project18/src/luong/model_zerodce.py)
 Hiện thực hóa từ bản chất toán học:
 * **`DCENet` (PyTorch `nn.Module`):**
   * 7 tầng tích chập đối xứng ($32$ channels, kernel $3 \times 3$, ReLU).
@@ -73,7 +73,7 @@ Hiện thực hóa từ bản chất toán học:
     $$LE_n(x) = LE_{n-1}(x) + \mathcal{A}_n(x) \cdot LE_{n-1}(x) \cdot (1 - LE_{n-1}(x))$$
   * Xử lý thuần túy trên Tensor PyTorch, hỗ trợ autograd.
 
-#### [NEW] [src/loss_zerodce.py](file:///home/minhluong/Documents/Project18/src/loss_zerodce.py)
+#### [NEW] [src/luong/loss_zerodce.py](file:///home/minhluong/Documents/Project18/src/luong/loss_zerodce.py)
 Tự lập trình 4 hàm mất mát không tham chiếu từ công thức giải tích:
 * **`L_spa` (Spatial Consistency Loss):**
   * Dùng tích chập với các kernel vi phân 4 hướng (trên, dưới, trái, phải) trên cả ảnh gốc $I$ và ảnh kết quả $Y$. Phạt sai khác giữa biến thiên cục bộ để bảo toàn biên nét.
@@ -86,7 +86,7 @@ Tự lập trình 4 hàm mất mát không tham chiếu từ công thức giải
 * **`ZeroDCELoss`:**
   * Lớp tổng hợp tính $\mathcal{L}_{total} = \mathcal{L}_{spa} + \mathcal{L}_{exp} + 5.0 \cdot \mathcal{L}_{col} + 200.0 \cdot \mathcal{L}_{tv\_A}$.
 
-#### [NEW] [src/preprocess_dip.py](file:///home/minhluong/Documents/Project18/src/preprocess_dip.py)
+#### [NEW] [src/luong/preprocess_dip.py](file:///home/minhluong/Documents/Project18/src/luong/preprocess_dip.py)
 * **`enhance_clahe_bilateral(image_bgr, clip_limit=2.0, tile_grid=(8,8))`:**
   * Chuyển đổi $BGR \rightarrow CIE\text{-}LAB$.
   * Tách kênh $L$ (Luminance) và thực hiện CLAHE (cân bằng lược đồ mức xám thích nghi có giới hạn tương phản).
@@ -94,7 +94,7 @@ Tự lập trình 4 hàm mất mát không tham chiếu từ công thức giải
   * Chuyển ngược về $RGB$.
   * Hỗ trợ xử lý đơn ảnh và xử lý theo thư mục (batch processing).
 
-#### [NEW] [src/metrics.py](file:///home/minhluong/Documents/Project18/src/metrics.py)
+#### [NEW] [src/luong/metrics.py](file:///home/minhluong/Documents/Project18/src/luong/metrics.py)
 * **Đánh giá ảnh GĐ1:**
   * Tính điểm **NIQE** (Naturalness Image Quality Evaluator) $\downarrow$.
   * Tính điểm **BRISQUE** $\downarrow$.
@@ -102,7 +102,7 @@ Tự lập trình 4 hàm mất mát không tham chiếu từ công thức giải
 * **Đánh giá nhận diện GĐ2:**
   * Parse và tính toán các chỉ số: $Precision$, $Recall$, $mAP@0.5$, $mAP@0.5:0.95$ từ model YOLOv8.
 
-#### [NEW] [src/visualize.py](file:///home/minhluong/Documents/Project18/src/visualize.py)
+#### [NEW] [src/luong/visualize.py](file:///home/minhluong/Documents/Project18/src/luong/visualize.py)
 * **`plot_side_by_side_comparison(...)`:**
   * Xuất ảnh đối chứng 4 khung hình ghép: `[Ảnh tối gốc] | [Ảnh CLAHE] | [Ảnh Zero-DCE] | [Dự đoán Bounding Box YOLOv8]`.
 * **`plot_metrics_comparison(...)`:**

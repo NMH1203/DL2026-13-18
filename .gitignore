@@ -44,13 +44,42 @@ Notebooks/NMH/github_pull.ipynb
 *.rar
 *.7z
 
+# Dataset and raw experiment folders (kept local, too large for git)
+Dataset/
+exdark_yolo_dark/
+Results_try/
+Results_final /
+Results_final/
 
+
+
+# Cho phép thư mục Results và các file mô hình, biểu đồ đi kèm
+!Results/
+!Results/**
+!Results/weights/*.pt
+!Results/weights/*.pth
+
+# Allow bundled lightweight weights and sample images for Demo / Doc
+!Demo/weights/
+!Demo/weights/*.pt
+!Demo/weights/*.pth
+!Demo/static/sample_images/
+!Demo/static/sample_images/*
+!Doc/weights/
+!Doc/weights/*.pt
+!Doc/weights/*.pth
+!Doc/samples/
+!Doc/samples/*
 
 # Generated experiment outputs
 runs/
-yolo_runs/
 wandb/
 mlruns/
+
+# Allow Results/yolo_runs
+!Results/yolo_runs/
+!Results/yolo_runs/**
+!Results/yolo_runs/*/*/*.pt
 
 # Logs and temporary files
 *.log

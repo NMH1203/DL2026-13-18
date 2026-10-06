@@ -19,8 +19,8 @@ flowchart TD
     subgraph STAGE1 ["✨ 2. GIAI ĐOẠN 1: IMAGE ENHANCEMENT (src/)"]
         direction TB
         subgraph S1_DL ["🌟 Nhánh Deep Learning (Tự Giám Sát)"]
-            DCE_Arch["<b>Kiến trúc DCE-Net & Zero-DCE++</b><br/>📄 <code>src/model_zerodce.py</code><br/><i>(DCE-Net 79K params / Zero-DCE++ 11K params)</i>"]
-            DCE_Loss["<b>4 Hàm Loss Tự Giám Sát (L_spa, L_exp, L_col, L_tv)</b><br/>📄 <code>src/loss_zerodce.py</code>"]
+            DCE_Arch["<b>Kiến trúc DCE-Net & Zero-DCE++</b><br/>📄 <code>src/luong/model_zerodce.py</code><br/><i>(DCE-Net 79K params / Zero-DCE++ 11K params)</i>"]
+            DCE_Loss["<b>4 Hàm Loss Tự Giám Sát (L_spa, L_exp, L_col, L_tv)</b><br/>📄 <code>src/luong/loss_zerodce.py</code>"]
             DCE_Weight["<b>Trọng số Checkpoint</b><br/>💾 <code>Results/weights/zerodce_best.pth</code>"]
             DCE_Out["<b>Tập ảnh ĐÃ TĂNG CƯỜNG SÁNG</b><br/>📂 <code>Dataset/exdark_yolo_zerodce/images/</code><br/>🏷️ <code>Dataset/exdark_yolo_zerodce/labels/</code><br/>⚙️ <code>Dataset/exdark_yolo_zerodce/data.yaml</code>"]
             
@@ -28,7 +28,7 @@ flowchart TD
         end
 
         subgraph S1_DIP ["⚙️ Nhánh Đối Chứng DIP Kinh Điển"]
-            DIP_Module["<b>CIE LAB + CLAHE + Bilateral Filter</b><br/>📄 <code>src/preprocess_dip.py</code>"]
+            DIP_Module["<b>CIE LAB + CLAHE + Bilateral Filter</b><br/>📄 <code>src/luong/preprocess_dip.py</code>"]
             DIP_Out["<b>Ảnh Cân Bằng Sáng Cổ Điển</b><br/><i>(Xử lý on-the-fly / batch)</i>"]
             DIP_Module --> DIP_Out
         end
@@ -41,8 +41,8 @@ flowchart TD
     end
 
     subgraph OUT ["📊 4. ĐÁNH GIÁ ĐỐI CHỨNG & BÁO CÁO KHOA HỌC"]
-        MetricsModule["<b>Bộ đo NIQE, BRISQUE, FPS, mAP</b><br/>📄 <code>src/metrics.py</code>"]
-        VisModule["<b>Xuất biểu đồ & ghép 4 khung hình</b><br/>📄 <code>src/visualize.py</code>"]
+        MetricsModule["<b>Bộ đo NIQE, BRISQUE, FPS, mAP</b><br/>📄 <code>src/luong/metrics.py</code>"]
+        VisModule["<b>Xuất biểu đồ & ghép 4 khung hình</b><br/>📄 <code>src/luong/visualize.py</code>"]
         
         Res1["<b>Mốc 1 (Raw Dark)</b><br/>mAP Dark Baseline"]
         Res2["<b>Mốc 2 (CLAHE)</b><br/>mAP DIP Cascaded"]
@@ -86,11 +86,11 @@ flowchart TD
 | **Dữ liệu tối gốc** | `Dataset/exdark_yolo_dark/` | Chứa 7,345 ảnh tối ExDark và 7,345 file nhãn YOLO (chia 70% Train, 20% Val, 10% Test). |
 | **Cấu hình nhãn** | `Dataset/exdark_yolo_dark/data.yaml` | Định nghĩa 12 lớp đối tượng chuẩn của ExDark kèm đường dẫn dữ liệu. |
 | **Dữ liệu ảnh sáng** | `Dataset/exdark_yolo_zerodce/` | Lưu trữ tập ảnh sau khi tăng cường qua Zero-DCE, giữ nguyên 100% tọa độ bounding box. |
-| **Mô hình GĐ1** | `src/model_zerodce.py` | Hiện thực hóa mạng `DCENet` (~79K params), `ZeroDCEpp` (~11K params) và hàm lặp $LE_n$. |
-| **Hàm mất mát GĐ1** | `src/loss_zerodce.py` | 4 hàm loss tự giám sát không cần ảnh tham chiếu: $\mathcal{L}_{spa}, \mathcal{L}_{exp}, \mathcal{L}_{col}, \mathcal{L}_{tv\_A}$. |
-| **Nhánh DIP cổ điển** | `src/preprocess_dip.py` | Thuật toán kinh điển CIE LAB + CLAHE kênh L + Bilateral Filter làm mốc đối chứng. |
-| **Bộ độ đo khoa học** | `src/metrics.py` | Tính toán chỉ số cảm quan không tham chiếu (NIQE, BRISQUE), đo FPS/độ trễ và trích xuất mAP. |
-| **Trực quan hóa** | `src/visualize.py` | Xuất ảnh đối chứng 4 khung hình song song và vẽ biểu đồ so sánh mAP 4 kịch bản. |
+| **Mô hình GĐ1** | `src/luong/model_zerodce.py` | Hiện thực hóa mạng `DCENet` (~79K params), `ZeroDCEpp` (~11K params) và hàm lặp $LE_n$. |
+| **Hàm mất mát GĐ1** | `src/luong/loss_zerodce.py` | 4 hàm loss tự giám sát không cần ảnh tham chiếu: $\mathcal{L}_{spa}, \mathcal{L}_{exp}, \mathcal{L}_{col}, \mathcal{L}_{tv\_A}$. |
+| **Nhánh DIP cổ điển** | `src/luong/preprocess_dip.py` | Thuật toán kinh điển CIE LAB + CLAHE kênh L + Bilateral Filter làm mốc đối chứng. |
+| **Bộ độ đo khoa học** | `src/luong/metrics.py` | Tính toán chỉ số cảm quan không tham chiếu (NIQE, BRISQUE), đo FPS/độ trễ và trích xuất mAP. |
+| **Trực quan hóa** | `src/luong/visualize.py` | Xuất ảnh đối chứng 4 khung hình song song và vẽ biểu đồ so sánh mAP 4 kịch bản. |
 | **Checkpoint mô hình**| `Results/weights/` | Lưu trữ trọng số tốt nhất: `zerodce_best.pth`, `yolov8n_dark_best.pt`, `yolov8n_zerodce_best.pt`. |
 | **Bảng số liệu & Hình**| `Results/figures/`, `Results/*.csv` | Lưu trữ sản phẩm khoa học phục vụ Báo cáo đồ án và Slide bảo vệ. |
 | **Script Master** | `run.py` | Tự động hóa trọn vẹn 6 Phase: Setup $\rightarrow$ Data $\rightarrow$ GĐ1 $\rightarrow$ GĐ2 $\rightarrow$ Báo cáo $\rightarrow$ Demo. |
@@ -111,7 +111,7 @@ flowchart TD
 
 ---
 
-### 3.2. Hiện Thực Hóa Kiến Trúc Mạng Giai Đoạn 1 (`src/model_zerodce.py`)
+### 3.2. Hiện Thực Hóa Kiến Trúc Mạng Giai Đoạn 1 (`src/luong/model_zerodce.py`)
 Không sử dụng thư viện đóng gói sẵn, mạng được code từ đầu bằng PyTorch:
 1. **Kiến trúc `DCENet` (CVPR 2020):**
    * Mạng tích chập 7 tầng đối xứng với các đường kết nối tắt (Skip Connections đa tỉ lệ: tầng 1-6, 2-5, 3-4).
@@ -128,7 +128,7 @@ Không sử dụng thư viện đóng gói sẵn, mạng được code từ đ�
 
 ---
 
-### 3.3. Hệ Thống 4 Hàm Loss Tự Giám Sát (`src/loss_zerodce.py`)
+### 3.3. Hệ Thống 4 Hàm Loss Tự Giám Sát (`src/luong/loss_zerodce.py`)
 Mô hình Zero-DCE học cách làm sáng ảnh mà không cần Ground Truth (ảnh sáng chuẩn) nhờ 4 ràng buộc vật lý:
 1. **Spatial Consistency Loss ($\mathcal{L}_{spa}$):**
    * Sử dụng 4 kernel vi phân định hướng (Trái, Phải, Trên, Dưới) tích chập với các vùng cục bộ sau pooling $4 \times 4$.
@@ -144,14 +144,14 @@ Mô hình Zero-DCE học cách làm sáng ảnh mà không cần Ground Truth (�
 
 ---
 
-### 3.4. Nhánh Đối Chứng DIP Truyền Thống (`src/preprocess_dip.py`)
+### 3.4. Nhánh Đối Chứng DIP Truyền Thống (`src/luong/preprocess_dip.py`)
 * Chuyển đổi ảnh $BGR \rightarrow CIE\text{-}LAB$.
 * Áp dụng thuật toán **CLAHE** (`clipLimit=2.0, tileGridSize=(8, 8)`) riêng trên kênh độ chói ($L$) để tăng độ tương phản cục bộ mà không làm biến dạng sắc màu kênh $A, B$.
 * Áp dụng **Bilateral Filter** (`d=7, sigmaColor=50, sigmaSpace=50`) để làm phẳng các hạt nhiễu cảm biến ISO cao ở vùng tối nhưng bảo toàn nguyên vẹn độ sắc nét của biên đối tượng.
 
 ---
 
-### 3.5. Bộ Độ Đo Đánh Giá Khoa Học (`src/metrics.py`)
+### 3.5. Bộ Độ Đo Đánh Giá Khoa Học (`src/luong/metrics.py`)
 1. **Đánh giá chất lượng ảnh không tham chiếu (GĐ1):**
    * **NIQE (Naturalness Image Quality Evaluator) $\downarrow$:** Trích xuất hệ số MSCN (Mean Subtracted Contrast Normalized) và ước lượng tham số phân phối Gauss tổng quát (GGD) để đo độ lệch so với thống kê cảnh tự nhiên.
    * **BRISQUE $\downarrow$:** Đánh giá mức độ suy thoái không gian do nhiễu hạt và mờ nhòe.
@@ -161,7 +161,7 @@ Mô hình Zero-DCE học cách làm sáng ảnh mà không cần Ground Truth (�
 
 ---
 
-### 3.6. Module Trực Quan Hóa Báo Cáo (`src/visualize.py`)
+### 3.6. Module Trực Quan Hóa Báo Cáo (`src/luong/visualize.py`)
 * **`plot_side_by_side_comparison`:** Tự động cắt và ghép ảnh so sánh 4 khung hình chất lượng cao:
   `[Ảnh tối gốc] | [DIP: CLAHE + Bilateral] | [Deep Learning: Zero-DCE] | [Dự đoán YOLOv8 Bounding Boxes]`.
 * **`plot_metrics_comparison`:** Tự động vẽ biểu đồ cột so sánh $mAP@0.5$ và $mAP@0.5:0.95$ qua 4 kịch bản đối chứng, xuất file vào `Results/figures/map_comparison.png`.
