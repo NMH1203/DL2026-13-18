@@ -1,0 +1,2 @@
+weights,data,split,precision,recall,map50,map50_95
+/kaggle/working/DL2026-13-18/Results/NDN/yolov8n_clahe_denoised_new_e40/weights/best.pt,/kaggle/working/DL2026-13-18/Dataset/exdark_yolo_clahe_denoised_new/data.yaml,test,0.6810812771287925,0.5793009307844815,0.6240195933366824,0.2933597030139571
