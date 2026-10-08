@@ -1,0 +1,2 @@
+experiment,model,epochs,imgsz,batch,patience,seed,enhancer,scale_factor,precision,recall,mAP50,mAP50_95,best_weights
+Zero-DCE++ Hiền Anh + YOLOv8n,yolov8n.pt,40,640,16,15,42,zerodcepp,4,0.6529939570516059,0.5797336473018612,0.6153709237191368,0.2900402996450747,/kaggle/working/runs_zerodcepp_hienanh/zerodcepp_hienanh_yolov8n_e40/weights/best.pt

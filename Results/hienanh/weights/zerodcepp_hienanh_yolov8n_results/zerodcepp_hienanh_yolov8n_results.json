@@ -1,0 +1,16 @@
+{
+  "experiment": "Zero-DCE++ Hi\u1ec1n Anh + YOLOv8n",
+  "model": "yolov8n.pt",
+  "epochs": 40,
+  "imgsz": 640,
+  "batch": 16,
+  "patience": 15,
+  "seed": 42,
+  "enhancer": "zerodcepp",
+  "scale_factor": 4,
+  "precision": 0.6529939570516059,
+  "recall": 0.5797336473018612,
+  "mAP50": 0.6153709237191368,
+  "mAP50_95": 0.2900402996450747,
+  "best_weights": "/kaggle/working/runs_zerodcepp_hienanh/zerodcepp_hienanh_yolov8n_e40/weights/best.pt"
+}

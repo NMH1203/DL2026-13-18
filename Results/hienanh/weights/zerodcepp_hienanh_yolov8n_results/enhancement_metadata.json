@@ -1,0 +1,18 @@
+{
+  "method": "Zero-DCE++ pretrained via src/hienanh",
+  "variant": "zerodcepp",
+  "scale_factor": 4,
+  "checkpoint": "/kaggle/working/Low-Light-Image-Enhancement-and-Downstream-Recognition/Results/hienanh/weights/zerodcepp_Epoch99.pth",
+  "checkpoint_sha256": "ca8855b90df9a80fa4195a831f33d3476b1964f787eb70602797c773067f3b84",
+  "fine_tuned_on_exdark": false,
+  "counts": {
+    "train": 5142,
+    "val": 1469,
+    "test": 734
+  },
+  "elapsed_seconds": {
+    "train": 95.69134005399997,
+    "val": 26.773960064999983,
+    "test": 13.279507672000022
+  }
+}
